@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../db/databridge.db"
+}
+
+model Agency {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  email     String
+  phone     String   @default("")
+  address   String   @default("")
+  logo      String   @default("")
+  plan      String   @default("professional") // starter, professional, enterprise
+  maxClients Int     @default(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clients   Client[]
+  users     User[]
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  industry  String
+  website   String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  status    String   @default("active") // active, inactive, churned
+  agencyId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  sources   DataSource[]
+  pipelines Pipeline[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      String   @default("SME") // SME, AGENCY_ADMIN, SUPER_ADMIN
+  avatar    String   @default("")
+  isActive  Boolean  @default(true)
+  agencyId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agency    Agency?  @relation(fields: [agencyId], references: [id])
+  activities ActivityLog[]
+}
+
+model DataSource {
+  id             String   @id @default(cuid())
+  name           String
+  type           String   // google_analytics, facebook_ads, google_ads, linkedin, csv_import, api
+  platform       String   @default("")
+  accountId      String   @default("")
+  status         String   @default("active") // active, paused, error
+  lastSync       DateTime?
+  syncFrequency  String   @default("daily") // hourly, daily, weekly
+  clientId       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  client         Client   @relation(fields: [clientId], references: [id])
+  dataPoints     DataPoint[]
+}
+
+model Pipeline {
+  id          String        @id @default(cuid())
+  name        String
+  description String        @default("")
+  status      String        @default("active") // active, paused, draft, error
+  frequency   String        @default("daily") // hourly, daily, weekly, monthly
+  clientId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  client      Client        @relation(fields: [clientId], references: [id])
+  steps       PipelineStep[]
+}
+
+model PipelineStep {
+  id         String   @id @default(cuid())
+  pipelineId String
+  name       String
+  type       String   // extract, transform, load, validate, enrich
+  order      Int
+  config     String   @default("{}")
+  status     String   @default("active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id])
+}
+
+model DataPoint {
+  id           String   @id @default(cuid())
+  sourceId     String
+  metric       String   // sessions, pageviews, users, conversions, revenue, impressions, clicks, ctr, bounceRate, avgSessionDuration, costPerClick, spend, conversionsCost
+  value        Float
+  date         DateTime
+  device       String   @default("all") // desktop, mobile, tablet, all
+  country      String   @default("")
+  campaign     String   @default("")
+  createdAt    DateTime @default(now())
+  source       DataSource @relation(fields: [sourceId], references: [id])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  type        String   @default("performance") // performance, pipeline, custom
+  format      String   @default("pdf") // pdf, csv, xlsx, json
+  status      String   @default("completed") // pending, generating, completed, error
+  scheduledAt DateTime?
+  generatedAt DateTime?
+  clientId    String?
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  category    String   @default("marketing") // marketing, sales, finance, operations
+  config      String   @default("{}")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Branding {
+  id          String   @id @default(cuid())
+  agencyId    String?
+  clientId    String?
+  primaryColor    String   @default("#1a1a1a")
+  secondaryColor  String   @default("#6366f1")
+  fontFamily      String   @default("Inter")
+  logo            String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // login, logout, create_pipeline, update_source, generate_report, etc.
+  resource  String   @default("")
+  details   String   @default("")
+  ipAddress String   @default("")
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model AIConversation {
+  id        String      @id @default(cuid())
+  userId    String
+  title     String      @default("New Conversation")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  messages  AIMessage[]
+}
+
+model AIMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  role           String         // user, assistant
+  content        String
+  createdAt      DateTime       @default(now())
+  conversation   AIConversation @relation(fields: [conversationId], references: [id])
+}
