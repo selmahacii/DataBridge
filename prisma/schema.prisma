@@ -19,11 +19,11 @@ model Agency {
   maxClients Int     @default(10)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  clients   Client[]
+  clients   SmeClient[]
   users     User[]
 }
 
-model Client {
+model SmeClient {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
@@ -50,6 +50,7 @@ model User {
   avatar    String   @default("")
   isActive  Boolean  @default(true)
   agencyId  String?
+  orgId     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   agency    Agency?  @relation(fields: [agencyId], references: [id])
@@ -68,7 +69,7 @@ model DataSource {
   clientId       String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  client         Client   @relation(fields: [clientId], references: [id])
+  client         SmeClient   @relation(fields: [clientId], references: [id])
   dataPoints     DataPoint[]
 }
 
@@ -81,7 +82,7 @@ model Pipeline {
   clientId    String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  client      Client        @relation(fields: [clientId], references: [id])
+  client      SmeClient     @relation(fields: [clientId], references: [id])
   steps       PipelineStep[]
 }
 
@@ -158,6 +159,59 @@ model ActivityLog {
   ipAddress String   @default("")
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Dashboard {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  orgId            String   // This maps to clientId in our schema, but code uses orgId
+  agencyId         String
+  isTemplate       Boolean  @default(false)
+  templateSourceId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  widgets          Widget[]
+}
+
+model Widget {
+  id           String    @id @default(cuid())
+  dashboardId  String
+  orgId        String
+  pipelineId   String?
+  widgetType   String
+  title        String
+  subtitle     String?
+  queryConfig  String?
+  visualConfig String?
+  positionX    Int       @default(0)
+  positionY    Int       @default(0)
+  width        Int       @default(6)
+  height       Int       @default(4)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  dashboard    Dashboard @relation(fields: [dashboardId], references: [id])
+}
+
+model ProcessedData {
+  id          String   @id @default(cuid())
+  pipelineId  String
+  orgId       String
+  rowDate     DateTime
+  rowCategory String?
+  rowMetric   String?
+  rowValue    Float
+  createdAt   DateTime @default(now())
+}
+
+model AgencyTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  config      String   // JSON string
+  agencyId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model AIConversation {

@@ -1,8 +1,10 @@
 # DataBridge Analytics
 
-Data pipeline & analytics platform built for marketing agencies that manage multiple clients. Think of it as a self-hosted alternative to tools like Supermetrics or Funnel — connect data sources, build ETL pipelines, create dashboards, and auto-generate client reports.
+Data pipeline & analytics platform for marketing agencies that manage multiple clients. Connect data sources (GA4, Meta Ads, Google Ads, LinkedIn), build ETL pipelines, create dashboards, and auto-generate client reports. Self-hosted alternative to Supermetrics / Funnel.
 
-## Setup
+---
+
+## Quick Start (Local Development)
 
 ```bash
 git clone https://github.com/databridge-io/analytics.git
@@ -13,9 +15,300 @@ npx prisma db seed
 npm run dev
 ```
 
-Then open http://localhost:3000. Default login is `admin@databridge.io` / `admin123`.
+Open **http://localhost:3000** — default login: `admin@databridge.io` / `admin123`
 
-## What's included
+> **Redis is optional for local dev.** Without `REDIS_URL` in `.env`, the app uses an in-memory cache. Everything works fine — Redis is only required in production/Docker.
+
+---
+
+## Redis Setup
+
+### Why Redis
+
+DataBridge uses Redis for:
+- **API response caching** — dashboard stats, charts, entity lists (30s–5min TTLs)
+- **Session storage** — auth tokens stored in Redis with automatic expiry (24h)
+- **Cache invalidation** — write operations (POST/PUT/DELETE) automatically clear related cache keys
+
+Without Redis, the app falls back to in-memory caching. This works fine for single-instance dev setups but won't work for:
+- Multi-container deployments (each container has its own memory)
+- Horizontal scaling
+- Session persistence across restarts
+
+### Option A: Local Redis (Docker)
+
+```bash
+docker run -d \
+  --name redis-local \
+  -p 6379:6379 \
+  redis:7-alpine \
+  redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+```
+
+Then add to your `.env`:
+```env
+REDIS_URL=redis://localhost:6379
+```
+
+### Option B: Local Redis (Native)
+
+**macOS:**
+```bash
+brew install redis
+brew services start redis
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+```
+
+**Verify it works:**
+```bash
+redis-cli ping  # should return PONG
+```
+
+### Verify Redis Connection
+
+After starting the app, check the health endpoint:
+
+```bash
+curl http://localhost:3000/api
+```
+
+Response:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-05-23T14:30:00.000Z",
+  "cache": {
+    "driver": "redis",
+    "redis": true
+  }
+}
+```
+
+- `driver: "redis"` + `redis: true` → Redis is connected and being used
+- `driver: "memory"` + `redis: true` → Redis not configured, in-memory fallback active
+
+---
+
+## Docker Deployment (From Scratch)
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) >= 20.10
+- [Docker Compose](https://docs.docker.com/compose/install/) >= 2.0
+- ~2 GB free disk space (app image ~350 MB, Redis ~15 MB, database ~30 MB seeded)
+- Port 3000 available on the host
+
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    Docker Compose                        │
+│                                                          │
+│  ┌─────────────────┐     ┌──────────────────────────┐   │
+│  │   databridge-     │     │   databridge-redis         │  │
+│  │   analytics       │────▶│   Redis 7 Alpine           │  │
+│  │   (Next.js)       │     │   Port 6379 (internal)     │  │
+│  │   Port 3000       │     │   128MB max memory         │  │
+│  └────────┬──────────┘     └──────────────────────────┘   │
+│           │                                               │
+│  ┌────────┴──────────┐                                   │
+│  │  SQLite            │                                   │
+│  │  /app/db/*.db      │                                   │
+│  │  (named volume)    │                                   │
+│  └────────────────────┘                                   │
+└──────────────────────────────────────────────────────────┘
+         │
+         ▼
+    Host :3000
+```
+
+The app connects to Redis via `redis://redis:6379` (Docker internal network). The health endpoint at `/api` reports Redis status in real-time.
+
+### 1. Clone & Configure
+
+```bash
+git clone https://github.com/databridge-io/analytics.git
+cd analytics
+cp .env.example .env
+```
+
+Edit `.env` — change at minimum the `JWT_SECRET`:
+
+```bash
+openssl rand -hex 32
+```
+
+```env
+JWT_SECRET=your-generated-secret-here
+REDIS_URL=redis://localhost:6379   # overridden by docker-compose
+```
+
+> The `REDIS_URL` in `.env` is overridden by docker-compose to `redis://redis:6379`.
+
+### 2. Build & Start
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+On **first start**, the entrypoint automatically:
+1. Waits for Redis to be ready (up to 10s, falls back gracefully)
+2. Creates the SQLite database schema (`prisma db push`)
+3. Seeds ~125,000 demo data points
+4. Starts the server
+
+```
+==> DataBridge Analytics starting...
+    Waiting for Redis at redis://redis:6379...
+    Redis is ready.
+==> First run detected — no database found.
+    Creating schema...
+    Seeding demo data (this may take a minute)...
+    Seed complete.
+==> Database ready.
+==> Launching server on port 3000...
+    Redis: redis://redis:6379
+```
+
+### 3. Verify
+
+```bash
+# Container status
+docker compose ps
+
+# Both containers should be healthy
+docker compose ps --format "table {{.Name}}\t{{.Status}}"
+
+# Health check
+curl http://localhost:3000/api
+# {"status":"ok","cache":{"driver":"redis","redis":true}}
+
+# View logs
+docker compose logs -f app
+docker compose logs -f redis
+```
+
+Open **http://localhost:3000** — login: `admin@databridge.io` / `admin123`
+
+### 4. Common Operations
+
+```bash
+# Stop
+docker compose down           # keep data
+docker compose down -v        # delete volumes (DB + Redis data)
+
+# Rebuild after code changes
+docker compose build --no-cache
+docker compose up -d
+
+# Reset everything
+docker compose down -v
+docker compose up -d
+
+# View Redis stats
+docker compose exec redis redis-cli info stats
+docker compose exec redis redis-cli info memory
+
+# View cached keys
+docker compose exec redis redis-cli keys "db:*"
+docker compose exec redis redis-cli keys "session:*"
+
+# Manually flush cache
+docker compose exec redis redis-cli flushdb
+
+# Access SQLite
+docker compose exec app sh
+sqlite3 /app/db/databridge.db "SELECT COUNT(*) FROM DataPoint;"
+```
+
+### Redis Configuration
+
+Redis runs with these defaults (configured in `docker-compose.yml`):
+- **Memory limit:** 128 MB with LRU eviction
+- **Persistence:** AOF (append-only file) — survives restarts
+- **Network:** Internal only (not exposed to host)
+
+To customize:
+```yaml
+# docker-compose.yml
+redis:
+  command: redis-server --maxmemory 256mb --maxmemory-policy volatile-ttl
+  ports:
+    - "6379:6379"  # expose to host for debugging (remove in production)
+```
+
+---
+
+## Caching Strategy
+
+### Cache Layers
+
+| Layer | TTL | Purpose |
+|---|---|---|
+| Dashboard stats | 30s | Aggregate KPIs — change with every data sync |
+| Chart / time-series | 30s | Medium freshness for acceptable staleness |
+| Entity lists (clients, sources, etc.) | 60s | CRUD-heavy endpoints |
+| Activity log | 30s | New events arrive frequently |
+| Templates, branding | 300s | Rarely changes |
+| User sessions | 24h | Matches token expiry |
+
+### Cache Invalidation
+
+Write operations automatically invalidate related caches:
+
+| Operation | Cache keys cleared |
+|---|---|
+| Create/update/delete client | `clients:*`, `dashboard:stats` |
+| Create/update/delete source | `sources:*`, `dashboard:stats`, `chart:*` |
+| Create/update/delete pipeline | `pipelines:*`, `dashboard:stats` |
+| Create/update/delete user | `users:*`, `auth:users`, `dashboard:stats` |
+| Create/update/delete report | `reports:*` |
+| Create/update/delete template | `templates:*` |
+| Update branding | `branding:*` |
+| Login | New session created (24h TTL) |
+| Logout | Session deleted |
+
+### Cache-Aside Pattern
+
+All caching uses the cache-aside pattern:
+
+```typescript
+// Example from src/app/api/dashboard/stats/route.ts
+const data = await cacheOrFetch(
+  "dashboard:stats",
+  async () => {
+    // Expensive query — only runs on cache miss
+    const [totalClients, totalSources, ...] = await Promise.all([...]);
+    return { totalClients, totalSources, ... };
+  },
+  { ttl: CACHE_TTL.STATS }  // 30 seconds
+);
+```
+
+---
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | No | `file:./db/databridge.db` | SQLite database path |
+| `REDIS_URL` | Production | *(none — in-memory fallback)* | Redis connection URL |
+| `JWT_SECRET` | Yes (prod) | `change-me-in-production` | Secret for signing tokens |
+| `CORS_ORIGINS` | No | `*` | Allowed CORS origins |
+| `NODE_ENV` | No | `development` | Set to `production` in Docker |
+| `PORT` | No | `3000` | Server port |
+| `APP_PORT` | No | `3000` | Host port mapping (Docker only) |
+
+---
+
+## What's Included
 
 - **Data connectors** — GA4, Meta Ads, Google Ads, LinkedIn, CSV import, custom API
 - **Pipeline builder** — visual ETL with configurable transform steps
@@ -24,74 +317,132 @@ Then open http://localhost:3000. Default login is `admin@databridge.io` / `admin
 - **Multi-tenant RBAC** — Super Admin > Agency Admin > SME user
 - **White-label** — agency-level branding (colors, logo)
 - **Data assistant** — natural language queries over your connected data
-- **Dark mode** — because why not
+- **Redis caching** — automatic API response caching with invalidation
+- **Session management** — Redis-backed auth sessions with TTL
+- **Dark mode**
 
-## Tech
+---
 
-Next.js 16 (App Router) + TypeScript 5 + Tailwind 4 + shadcn/ui + Recharts + Prisma (SQLite) + Zustand + TanStack Query + Framer Motion.
+## Tech Stack
 
-## Docker
+Next.js 16 (App Router) · TypeScript 5 · Tailwind 4 · shadcn/ui · Recharts · Prisma (SQLite) · Redis 7 (ioredis) · Zustand · TanStack Query · Framer Motion
 
-```bash
-docker compose build
-docker compose up -d
+---
 
-# First run only — seed the database
-docker compose exec databridge npx prisma db push
-docker compose exec databridge npx prisma db seed
+## API Endpoints
+
+| Method | Endpoint | Description | Cached |
+|---|---|---|---|
+| GET | `/api` | Health check (Redis status) | No |
+| POST | `/api/auth/login` | Login + create Redis session | No |
+| DELETE | `/api/auth/login` | Logout + delete session | No |
+| GET | `/api/auth/users` | Available users for login | 60s |
+| GET | `/api/dashboard/stats` | Aggregate KPIs | 30s |
+| GET | `/api/dashboard/chart` | Time-series data | 30s |
+| GET | `/api/clients` | List clients | 60s |
+| POST | `/api/clients` | Create client (invalidates cache) | — |
+| PUT | `/api/clients/:id` | Update client (invalidates cache) | — |
+| DELETE | `/api/clients/:id` | Delete client (invalidates cache) | — |
+| GET | `/api/sources` | List data sources | 60s |
+| POST | `/api/sources` | Create source (invalidates cache) | — |
+| PUT | `/api/sources/:id` | Update source (invalidates cache) | — |
+| DELETE | `/api/sources/:id` | Delete source (invalidates cache) | — |
+| GET | `/api/pipelines` | List pipelines | 60s |
+| POST | `/api/pipelines` | Create pipeline (invalidates cache) | — |
+| PUT | `/api/pipelines/:id` | Update pipeline (invalidates cache) | — |
+| DELETE | `/api/pipelines/:id` | Delete pipeline (invalidates cache) | — |
+| GET | `/api/reports` | List reports | 60s |
+| POST | `/api/reports` | Create report (invalidates cache) | — |
+| DELETE | `/api/reports/:id` | Delete report (invalidates cache) | — |
+| GET | `/api/templates` | List templates | 300s |
+| POST | `/api/templates` | Create template (invalidates cache) | — |
+| PUT | `/api/templates/:id` | Update template (invalidates cache) | — |
+| DELETE | `/api/templates/:id` | Delete template (invalidates cache) | — |
+| GET | `/api/agencies` | List agencies | 60s |
+| POST | `/api/agencies` | Create agency (invalidates cache) | — |
+| PUT | `/api/agencies/:id` | Update agency (invalidates cache) | — |
+| DELETE | `/api/agencies/:id` | Delete agency (invalidates cache) | — |
+| GET | `/api/users` | List users | 60s |
+| POST | `/api/users` | Create user (invalidates cache) | — |
+| PUT | `/api/users/:id` | Update user (invalidates cache) | — |
+| DELETE | `/api/users/:id` | Delete user (invalidates cache) | — |
+| GET | `/api/activity` | Activity log | 30s |
+| GET | `/api/branding` | Branding settings | 300s |
+| PUT | `/api/branding` | Update branding (invalidates cache) | — |
+| GET | `/api/export` | CSV data export | No |
+
+---
+
+## Project Structure
+
+```
+├── Dockerfile              # 3-stage production build
+├── docker-compose.yml      # App + Redis orchestration
+├── docker-entrypoint.sh    # First-run DB init + Redis wait
+├── next.config.ts          # Next.js config (standalone output)
+├── package.json
+├── prisma/
+│   ├── schema.prisma       # 16 models
+│   └── seed.ts             # Demo data generator (~125K rows)
+├── db/                     # SQLite database files (gitignored)
+├── public/                 # Static assets
+└── src/
+    ├── app/
+    │   ├── page.tsx        # SPA entry point
+    │   ├── layout.tsx      # Root layout
+    │   ├── login/          # Auth pages
+    │   └── api/            # 22+ API route handlers (Redis-cached)
+    ├── components/
+    │   ├── dashboard/      # Main app views
+    │   ├── ui/             # shadcn/ui components
+    │   └── ...             # Layout, sidebar, providers
+    ├── lib/
+    │   ├── db.ts           # Prisma client
+    │   ├── redis.ts        # Redis client (ioredis)
+    │   ├── cache.ts        # Cache layer (Redis + in-memory fallback)
+    │   ├── session.ts      # Redis session management
+    │   ├── api.ts          # Frontend fetch wrapper
+    │   └── ...             # Config, utils
+    └── stores/             # Zustand state (auth, app, chat, pipelines)
 ```
 
-The Dockerfile is multi-stage (Alpine) and the compose file has health checks + restart policies. SQLite data lives in a named volume so it persists across container recreations.
+---
 
-## Project layout
-
-```
-src/
-├── app/api/       # route handlers
-├── components/    # pages + shared + ui (shadcn)
-├── lib/           # db client, fetch wrapper, config, seed logic
-└── stores/        # zustand (auth, app state, chat, pipelines)
-prisma/
-├── schema.prisma  # 16 models
-└── seed.ts        # ~120K rows of demo data
-```
-
-## Scripts
+## Available Scripts
 
 | Command | Description |
-|---------|-------------|
-| `npm run dev` | dev server |
-| `npm run build` | production build |
-| `npm run lint` | eslint |
-| `npm run db:push` | push schema to sqlite |
-| `npm run db:seed` | seed demo data |
-| `npm run db:reset` | wipe + re-seed |
-| `npm run db:studio` | prisma studio (db gui) |
+|---|---|
+| `npm run dev` | Development server with hot reload |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:push` | Push schema changes to SQLite |
+| `npm run db:seed` | Seed demo data (~125K rows) |
+| `npm run db:reset` | Wipe database and re-seed |
+| `npm run db:studio` | Open Prisma Studio (database GUI) |
 
-## Env vars
+---
 
-Copy `.env.example` to `.env`. The important ones:
+## Troubleshooting
 
-- `DATABASE_URL` — sqlite path (default: `file:./db/databridge.db`)
-- `JWT_SECRET` — required in production
-- `CORS_ORIGINS` — defaults to `*`
+### "port 3000 already in use"
+```env
+APP_PORT=8080
+```
 
-## API
+### Redis connection refused (Docker)
+Check Redis is healthy: `docker compose ps`. The app waits up to 10s for Redis on startup and falls back to in-memory cache if it can't connect.
 
-Everything is under `/api` and returns JSON. Key endpoints:
+### Cache not invalidating
+Check Redis keys: `docker compose exec redis redis-cli keys "db:*"`. If stale data persists, flush: `docker compose exec redis redis-cli flushdb`.
 
-- `/api/dashboard/stats` — aggregate KPIs
-- `/api/dashboard/chart` — time-series for charts
-- `/api/clients` — CRUD
-- `/api/sources` — data source CRUD
-- `/api/pipelines` — pipeline CRUD
-- `/api/reports` — generate/schedule reports
-- `/api/templates` — dashboard/report templates
-- `/api/agencies` — agency management
-- `/api/users` — user CRUD
-- `/api/activity` — audit log
-- `/api/branding` — per-agency branding settings
-- `/api/export` — CSV data export
+### Session lost after restart
+Without Redis, sessions are in-memory and lost on restart. Configure `REDIS_URL` to persist sessions across container restarts.
+
+### Redis OOM (out of memory)
+Increase `--maxmemory` in `docker-compose.yml` or switch eviction policy to `volatile-ttl` to prefer evicting keys with TTL.
+
+---
 
 ## License
 

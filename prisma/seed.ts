@@ -236,7 +236,7 @@ async function seed() {
   console.log("Creating clients...");
   const clients = await Promise.all(
     CLIENTS.map((c, i) =>
-      db.client.create({ data: { ...c, agencyId: i < 5 ? agencies[0].id : agencies[1].id } })
+      db.smeClient.create({ data: { ...c, agencyId: i < 5 ? agencies[0].id : agencies[1].id } })
     )
   );
 
@@ -280,7 +280,7 @@ async function seed() {
   const totalDays = dates.length;
   let totalPoints = 0;
   const BATCH_SIZE = 5000;
-  let batch: Record<string, string | number | Date>[] = [];
+  let batch: any[] = [];
 
   for (let si = 0; si < allSources.length; si++) {
     const src = allSources[si];
@@ -305,7 +305,7 @@ async function seed() {
       const dayOfWeek = date.getDay();
       const month = date.getMonth();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      const weekendFactor = isWeekend ? (profile.industry === "Travel & Hospitality" ? 1.2 : 0.65) : 1.0;
+      const weekendFactor = isWeekend ? (client.industry === "Travel & Hospitality" ? 1.2 : 0.65) : 1.0;
 
       const grow = growthFactor(di, totalDays, profile.growthRate);
       const season = seasonalFactor(month, profile.seasonPeakMonth, profile.seasonality);
@@ -569,7 +569,7 @@ async function seed() {
   console.log("\nSeeding complete!");
   console.log(`Database statistics:`);
   console.log(`  Agencies: ${await db.agency.count()}`);
-  console.log(`  Clients: ${await db.client.count()}`);
+  console.log(`  Clients: ${await db.smeClient.count()}`);
   console.log(`  Users: ${await db.user.count()}`);
   console.log(`  Data Sources: ${await db.dataSource.count()}`);
   console.log(`  Data Points: ${await db.dataPoint.count()}`);

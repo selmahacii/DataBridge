@@ -71,26 +71,32 @@ export async function POST(request: NextRequest) {
     const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
     const userQuery = lastUserMessage?.content ?? ''
 
-    const pipelineCount = await db.pipeline.count({ where: { orgId } })
-    const dashboardCount = await db.dashboard.count({ where: { orgId } })
-    const sourceCount = await db.dataSource.count({ where: { orgId } })
+    const pipelineCount = await db.pipeline.count({ where: { clientId: orgId } })
+    const reportCount = await db.report.count({ where: { clientId: orgId } })
+    const sourceCount = await db.dataSource.count({ where: { clientId: orgId } })
     const dataSources = await db.dataSource.findMany({
-      where: { orgId },
-      select: { name: true, connectorType: true, status: true },
+      where: { clientId: orgId },
+      select: { name: true, type: true, status: true },
     })
-    const recentData = await db.processedData.findMany({
-      where: { orgId },
-      orderBy: { rowDate: 'desc' },
+    const recentData = await db.dataPoint.findMany({
+      where: {
+        source: {
+          clientId: orgId,
+        },
+      },
+      include: {
+        source: true,
+      },
+      orderBy: { date: 'desc' },
       take: 20,
-      distinct: ['rowDate', 'rowCategory', 'rowMetric'],
     })
 
     const dataContext = {
       pipelineCount,
-      dashboardCount,
+      dashboardCount: reportCount,
       sourceCount,
-      sourceNames: dataSources.map(s => `${s.name} (${s.connectorType})`),
-      recentMetrics: recentData.map(d => `${d.rowDate} | ${d.rowCategory} | ${d.rowMetric}: ${d.rowValue}`),
+      sourceNames: dataSources.map((s: { name: string; type: string }) => `${s.name} (${s.type})`),
+      recentMetrics: recentData.map((d: any) => `${d.date.toISOString().split('T')[0]} | ${d.source.name} | ${d.metric}: ${d.value}`),
     }
 
     // Simulate a short processing delay
