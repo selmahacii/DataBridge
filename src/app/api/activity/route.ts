@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
     });
 
     const enriched = activities.map((a) => ({
-      ...a,
+      id: a.id,
+      action: a.action,
+      resource: a.resource,
+      description: a.details,
+      timestamp: a.createdAt.toISOString(),
       userName: a.user
         ? `${a.user.firstName} ${a.user.lastName}`
         : "System",

@@ -39,9 +39,15 @@ export async function GET(request: NextRequest) {
 
     const where: Prisma.DataPointWhereInput = { metric: { in: metrics } };
     if (sourceId) where.sourceId = sourceId;
-    if (startDate) where.date = { ...where.date, gte: startDate };
-    // endDate is inclusive, so add 23:59:59.999
-    if (endDate) where.date = { ...where.date, lte: new Date(endDate.getTime() + 86400000 - 1) };
+
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) (where.date as any).gte = startDate;
+      if (endDate)
+        (where.date as any).lte = new Date(
+          endDate.getTime() + 86400000 - 1
+        );
+    }
 
     const dataPoints = await db.dataPoint.findMany({
       where,
@@ -50,6 +56,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (metrics.length === 1) {
+      const metricName = metrics[0];
       const grouped = new Map<string, number>();
       for (const dp of dataPoints) {
         const key = getDateKey(new Date(dp.date), groupBy);
@@ -57,13 +64,12 @@ export async function GET(request: NextRequest) {
       }
       const result = Array.from(grouped.entries()).map(([date, value]) => ({
         date,
-        metric: metrics[0],
-        value: Math.round(value * 100) / 100,
+        [metricName]: Math.round(value * 100) / 100,
       }));
-      return NextResponse.json(result);
+      return NextResponse.json({ data: result });
     }
 
-    const results: Record<string, { date: string; metric: string; value: number }[]> = {};
+    const results: Record<string, any[]> = {};
     for (const m of metrics) {
       const grouped = new Map<string, number>();
       for (const dp of dataPoints.filter((dp) => dp.metric === m)) {
@@ -72,12 +78,11 @@ export async function GET(request: NextRequest) {
       }
       results[m] = Array.from(grouped.entries()).map(([date, value]) => ({
         date,
-        metric: m,
-        value: Math.round(value * 100) / 100,
+        [m]: Math.round(value * 100) / 100,
       }));
     }
 
-    return NextResponse.json(results);
+    return NextResponse.json({ data: results });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -6,10 +6,18 @@ export async function GET() {
     const reports = await db.report.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        _count: true,
+        client: {
+          select: { name: true },
+        },
       },
     });
-    return NextResponse.json(reports);
+
+    const formattedReports = reports.map((report) => ({
+      ...report,
+      clientName: (report.client as any)?.name || null,
+    }));
+
+    return NextResponse.json(formattedReports);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

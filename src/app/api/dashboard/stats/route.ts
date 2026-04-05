@@ -30,11 +30,11 @@ export async function GET() {
     // Conversion rate: sum(conversions) / sum(sessions) * 100
     const convAgg = await db.dataPoint.aggregate({
       _sum: { value: true },
-      where: { metric: "conversions", device: "all", country: "", campaign: "" },
+      where: { metric: "conversions" },
     });
     const sessAgg = await db.dataPoint.aggregate({
       _sum: { value: true },
-      where: { metric: "sessions", device: "all", country: "", campaign: "" },
+      where: { metric: "sessions" },
     });
     const totalConversions = convAgg._sum.value ?? 0;
     const totalSessions = sessAgg._sum.value ?? 1;
@@ -42,12 +42,12 @@ export async function GET() {
 
     return NextResponse.json({
       totalClients,
-      totalSources,
-      totalDataPoints,
+      dataSources: totalSources,
+      dataPoints: totalDataPoints,
       totalPipelines,
       activeUsers,
       totalRevenue: Math.round((totalRevenue._sum.value ?? 0) * 100) / 100,
-      avgConversionRate,
+      avgConversion: avgConversionRate,
       activePipelines: await db.pipeline.count({ where: { status: "active" } }),
       lastSync: lastSync?.lastSync ?? null,
     });
