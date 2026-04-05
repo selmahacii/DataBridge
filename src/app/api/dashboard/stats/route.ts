@@ -12,7 +12,7 @@ export async function GET() {
       totalRevenue,
       lastSync,
     ] = await Promise.all([
-      db.client.count(),
+      db.smeClient.count(),
       db.dataSource.count(),
       db.dataPoint.count(),
       db.pipeline.count(),

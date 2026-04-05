@@ -38,6 +38,7 @@ model SmeClient {
   agency    Agency   @relation(fields: [agencyId], references: [id])
   sources   DataSource[]
   pipelines Pipeline[]
+  reports   Report[]
 }
 
 model User {
@@ -55,6 +56,7 @@ model User {
   updatedAt DateTime @updatedAt
   agency    Agency?  @relation(fields: [agencyId], references: [id])
   activities ActivityLog[]
+  reports    Report[]
 }
 
 model DataSource {
@@ -125,6 +127,8 @@ model Report {
   userId      String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  client      SmeClient? @relation(fields: [clientId], references: [id])
+  user        User?      @relation(fields: [userId], references: [id])
 }
 
 model Template {

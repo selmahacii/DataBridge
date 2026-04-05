@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    const clients = await db.client.findMany({
+    const clients = await db.smeClient.findMany({
       include: {
         agency: {
           select: { name: true },
@@ -24,7 +24,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const client = await db.client.create({
+    const client = await db.smeClient.create({
       data: {
         name: body.name,
         slug: body.slug,

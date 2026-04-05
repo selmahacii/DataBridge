@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const client = await db.client.findUnique({
+    const client = await db.smeClient.findUnique({
       where: { id },
       include: {
         agency: {
@@ -38,7 +38,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const client = await db.client.update({
+    const client = await db.smeClient.update({
       where: { id },
       data: {
         ...(body.name !== undefined && { name: body.name }),
@@ -69,7 +69,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await db.client.delete({ where: { id } });
+    await db.smeClient.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
