@@ -8,7 +8,15 @@ import {
   GitBranch,
   DollarSign,
   TrendingUp,
+  Target,
+  Zap,
+  Bell,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -124,6 +132,16 @@ export function DashboardPage() {
     queryKey: ["activity", 10],
     queryFn: () => api.getActivity(10) as Promise<ActivityItem[]>,
   });
+  
+  const goalsQuery = useQuery({
+    queryKey: ["goals"],
+    queryFn: () => api.getGoals() as Promise<any[]>,
+  });
+
+  const alertsQuery = useQuery({
+    queryKey: ["alerts"],
+    queryFn: () => api.getAlerts() as Promise<any[]>,
+  });
 
   const stats = statsQuery.data ?? {};
   const sessionsData = chartQuery.data?.data ?? [];
@@ -178,6 +196,20 @@ export function DashboardPage() {
           Overview of your analytics platform
         </p>
       </div>
+
+      {alertsQuery.data && alertsQuery.data.length > 0 && (
+        <div className="space-y-3">
+          {alertsQuery.data.slice(0, 2).map((alert) => (
+            <Alert key={alert.id} variant={alert.severity === 'high' ? 'destructive' : 'default'} className="bg-background/50 backdrop-blur-sm">
+              <Bell className="h-4 w-4" />
+              <AlertTitle className="text-xs font-bold uppercase tracking-widest">Anomaly Detected</AlertTitle>
+              <AlertDescription className="text-sm">
+                {alert.message}
+              </AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {kpiItems.map((kpi) => (
@@ -384,6 +416,63 @@ export function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* 🎯 Goal Progress */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base">KPI Goals</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-6">
+            {goalsQuery.data?.map((goal) => (
+              <div key={goal.id} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium capitalize">{goal.metric} Target</span>
+                  <span className="text-muted-foreground">{Math.round((goal.currentValue / goal.targetValue) * 100)}%</span>
+                </div>
+                <Progress value={(goal.currentValue / goal.targetValue) * 100} className="h-2" />
+                <p className="text-[10px] text-muted-foreground">Current: {goal.currentValue.toLocaleString()} / Target: {goal.targetValue.toLocaleString()}</p>
+              </div>
+            ))}
+            {(!goalsQuery.data || goalsQuery.data.length === 0) && (
+              <div className="py-8 text-center text-sm text-muted-foreground">No active goals set</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ⚡ Pipeline Pulse */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base">Bridge Pulse</CardTitle>
+            <Zap className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            <div className="space-y-4">
+              {[
+                { name: 'GA4 Sync', status: 'success', time: '2m ago', rows: 1240 },
+                { name: 'Meta Ads ETL', status: 'success', time: '15m ago', rows: 450 },
+                { name: 'Weekly Report Gen', status: 'failure', time: '1h ago', rows: 0 },
+              ].map((log, i) => (
+                <div key={i} className="flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    {log.status === 'success' ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-destructive" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{log.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{log.time} • {log.rows} rows</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">Details</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

@@ -65,11 +65,19 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="flex items-center gap-2 px-4 py-3">
-        <Logo />
-        <span className="text-sm font-semibold tracking-tight whitespace-nowrap group-data-[collapsible=icon]:hidden">
-          DataBridge
-        </span>
+      <SidebarHeader className="flex flex-row items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Logo />
+          <span className="text-sm font-semibold tracking-tight whitespace-nowrap group-data-[collapsible=icon]:hidden font-heading uppercase text-glow">
+            DataBridge
+          </span>
+        </div>
+        <div className="flex group-data-[collapsible=icon]:hidden">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+            <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+            <span className="text-[10px] font-bold text-green-500 tracking-wider">PULSE: LIVE</span>
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarSeparator />
       <SidebarContent>

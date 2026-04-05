@@ -20,6 +20,8 @@ export const api = {
   // Dashboard
   getDashboardStats: () => request<Record<string, unknown>>("/dashboard/stats"),
   getChartData: (params: string) => request<Record<string, unknown>>(`/dashboard/chart?${params}`),
+  getGoals: () => request<any[]>("/dashboard/goals"),
+  getAlerts: () => request<any[]>("/dashboard/alerts"),
 
   // Clients
   getClients: () => request("/clients"),
