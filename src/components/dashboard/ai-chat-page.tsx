@@ -21,7 +21,7 @@ const initialMessages: Message[] = [
     id: "1",
     role: "assistant",
     content:
-      "Hello! I am your DataBridge Data Assistant. I can help you with data analysis, report generation, pipeline configuration, and more. How can I help you today?",
+      "Hello! I am your DataBridge Data Analyst. I can help you with data analysis, report generation, pipeline configuration, and more. How can I help you today?",
     timestamp: new Date(Date.now() - 60000 * 5),
   },
   {
@@ -86,7 +86,7 @@ export function AiChatPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data Assistant</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Data Analyst</h1>
         <p className="text-muted-foreground">
           Ask questions about your data and get contextual insights
         </p>

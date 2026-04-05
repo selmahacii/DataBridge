@@ -325,7 +325,7 @@ const data = await cacheOrFetch(
 
 ## Tech Stack
 
-Next.js 16 (App Router) · TypeScript 5 · Tailwind 4 · shadcn/ui · Recharts · Prisma (SQLite) · Redis 7 (ioredis) · Zustand · TanStack Query · Framer Motion
+Next.js 15 (App Router) · TypeScript 5 · Tailwind 4 · shadcn/ui · Recharts · Prisma (SQLite) · Redis 7 (ioredis) · Zustand · TanStack Query · Framer Motion
 
 ---
 

@@ -554,14 +554,14 @@ async function seed() {
   }
 
   // Conversations
-  console.log("Creating sample AI conversations...");
-  const conv1 = await db.aIConversation.create({ data: { userId: users[0].id, title: "Campaign Performance Analysis" } });
-  await db.aIMessage.createMany({ data: [
+  console.log("Generating sample user conversations...");
+  const conv1 = await db.insightConversation.create({ data: { userId: users[0].id, title: "Campaign Performance Analysis" } });
+  await db.insightMessage.createMany({ data: [
     { conversationId: conv1.id, role: "user", content: "What was our best performing campaign last month?" },
     { conversationId: conv1.id, role: "assistant", content: "Based on the data, the 'Retargeting' campaign delivered the highest ROI across all channels. It generated 12,400 conversions with a cost per acquisition of $18.50, which is 32% below your average CPA." },
   ]});
-  const conv2 = await db.aIConversation.create({ data: { userId: users[1].id, title: "Data Pipeline Troubleshooting" } });
-  await db.aIMessage.createMany({ data: [
+  const conv2 = await db.insightConversation.create({ data: { userId: users[1].id, title: "Data Pipeline Troubleshooting" } });
+  await db.insightMessage.createMany({ data: [
     { conversationId: conv2.id, role: "user", content: "Why is the Meta Ads pipeline showing errors?" },
     { conversationId: conv2.id, role: "assistant", content: "The Meta Ads pipeline encountered authentication errors on 3 of the last 7 sync attempts. I recommend re-authenticating the Meta Ads source in your data source settings." },
   ]});

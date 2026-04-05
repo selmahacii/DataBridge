@@ -218,20 +218,20 @@ model AgencyTemplate {
   updatedAt   DateTime @updatedAt
 }
 
-model AIConversation {
-  id        String      @id @default(cuid())
+model InsightConversation {
+  id        String           @id @default(cuid())
   userId    String
-  title     String      @default("New Conversation")
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  messages  AIMessage[]
+  title     String           @default("New Insight")
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  messages  InsightMessage[]
 }
 
-model AIMessage {
-  id             String         @id @default(cuid())
+model InsightMessage {
+  id             String              @id @default(cuid())
   conversationId String
-  role           String         // user, assistant
+  role           String              // user, assistant
   content        String
-  createdAt      DateTime       @default(now())
-  conversation   AIConversation @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime            @default(now())
+  conversation   InsightConversation @relation(fields: [conversationId], references: [id])
 }

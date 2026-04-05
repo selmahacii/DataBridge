@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
-// NOTE: SQLite stores dates as integers (unix epoch ms) in DataPoint.date
-// but Prisma exposes them as DateTime. The getDateKey helper handles both
-// formats. This was a pain to debug.
+// Handles data grouping for various time periods (month, week, day)
 
 function parseDate(val: string | null): Date | undefined {
   if (!val) return undefined;
