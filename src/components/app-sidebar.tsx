@@ -33,6 +33,8 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { RefreshCw } from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -40,23 +42,23 @@ interface NavItem {
   icon: React.ElementType;
 }
 
-const mainNav: NavItem[] = [
-  { label: "Dashboard", page: "dashboard", icon: LayoutDashboard },
-  { label: "Clients", page: "clients", icon: Users },
-  { label: "Data Sources", page: "sources", icon: Database },
-  { label: "Pipelines", page: "pipelines", icon: GitBranch },
-  { label: "Reports", page: "reports", icon: FileBarChart },
+const operationalNav: NavItem[] = [
+  { label: "Performance Overview", page: "dashboard", icon: LayoutDashboard },
+  { label: "Strategic Clients", page: "clients", icon: Users },
+  { label: "Automated Reports", page: "reports", icon: FileBarChart },
 ];
 
-const managementNav: NavItem[] = [
-  { label: "Templates", page: "templates", icon: LayoutTemplate },
-  { label: "Users", page: "users", icon: UserCog },
-  { label: "Agencies", page: "agencies", icon: Building2 },
-  { label: "Branding", page: "branding", icon: Palette },
+const dataNav: NavItem[] = [
+  { label: "Integration Hub", page: "sources", icon: Database },
+  { label: "ETL Pipelines", page: "pipelines", icon: GitBranch },
+  { label: "Intelligence Sync", page: "ai-chat", icon: MessageSquare },
 ];
 
-const toolsNav: NavItem[] = [
-  { label: "Data Assistant", page: "ai-chat", icon: MessageSquare },
+const systemNav: NavItem[] = [
+  { label: "Report Blueprints", page: "templates", icon: LayoutTemplate },
+  { label: "Agency Branding", page: "branding", icon: Palette },
+  { label: "Access Control", page: "users", icon: UserCog },
+  { label: "Global Network", page: "agencies", icon: Building2 },
 ];
 
 export function AppSidebar() {
@@ -64,74 +66,91 @@ export function AppSidebar() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="flex flex-row items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Logo />
-          <span className="text-sm font-semibold tracking-tight whitespace-nowrap group-data-[collapsible=icon]:hidden font-heading uppercase text-glow">
-            DataBridge
-          </span>
-        </div>
-        <div className="flex group-data-[collapsible=icon]:hidden">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
-            <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-            <span className="text-[10px] font-bold text-green-500 tracking-wider">PULSE: LIVE</span>
+    <Sidebar collapsible="icon" className="border-r border-border/50 bg-background/95 backdrop-blur-md">
+      <SidebarHeader className="flex flex-row items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center rounded-xl bg-primary/10 p-2 shadow-sm ring-1 ring-primary/20 backdrop-blur-xl">
+            <Logo className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span className="text-sm font-bold tracking-tight font-heading uppercase text-glow">
+              DataBridge
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest leading-none">
+              Analytics OS
+            </span>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarSeparator />
-      <SidebarContent>
+      
+      <SidebarSeparator className="opacity-50" />
+      
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Intelligence</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNav.map((item) => (
+              {operationalNav.map((item) => (
                 <SidebarMenuItem key={item.page}>
                   <SidebarMenuButton
                     isActive={currentPage === item.page}
                     onClick={() => setCurrentPage(item.page)}
                     tooltip={item.label}
+                    className={cn(
+                      "transition-all duration-200",
+                      currentPage === item.page ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                    )}
                   >
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <item.icon className={cn("h-4 w-4 shrink-0 transition-colors", currentPage === item.page ? "text-primary" : "text-muted-foreground")} />
+                    <span className="font-medium text-sm">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Operations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {managementNav.map((item) => (
+              {dataNav.map((item) => (
                 <SidebarMenuItem key={item.page}>
                   <SidebarMenuButton
                     isActive={currentPage === item.page}
                     onClick={() => setCurrentPage(item.page)}
                     tooltip={item.label}
+                    className={cn(
+                      "transition-all duration-200",
+                      currentPage === item.page ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                    )}
                   >
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <item.icon className={cn("h-4 w-4 shrink-0 transition-colors", currentPage === item.page ? "text-primary" : "text-muted-foreground")} />
+                    <span className="font-medium text-sm">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
         <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Administration</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {toolsNav.map((item) => (
+              {systemNav.map((item) => (
                 <SidebarMenuItem key={item.page}>
                   <SidebarMenuButton
                     isActive={currentPage === item.page}
                     onClick={() => setCurrentPage(item.page)}
                     tooltip={item.label}
+                    className={cn(
+                      "transition-all duration-200",
+                      currentPage === item.page ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                    )}
                   >
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <item.icon className={cn("h-4 w-4 shrink-0 transition-colors", currentPage === item.page ? "text-primary" : "text-muted-foreground")} />
+                    <span className="font-medium text-sm">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -139,29 +158,39 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarSeparator />
-        <div className="flex items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:justify-center">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="shrink-0"
-          >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-          <div className="flex items-center gap-2 min-w-0 group-data-[collapsible=icon]:hidden">
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs">AD</AvatarFallback>
+
+      <SidebarFooter className="p-4">
+        <SidebarSeparator className="mb-4 opacity-50" />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 px-1 group-data-[collapsible=icon]:justify-center">
+            <Avatar className="h-8 w-8 border border-border/50 shadow-sm">
+              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">AD</AvatarFallback>
             </Avatar>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-medium truncate">Admin User</span>
-              <span className="text-xs text-muted-foreground truncate">
-                admin@databridge.io
-              </span>
+            <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+              <span className="text-xs font-bold truncate">Selma Haci</span>
+              <span className="text-[10px] text-muted-foreground truncate font-medium">Agency Administrator</span>
             </div>
+          </div>
+          
+          <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center px-1">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+            >
+              <Sun className="h-4 w-4 transition-all dark:scale-0 dark:-rotate-90" />
+              <Moon className="absolute h-4 w-4 transition-all scale-0 rotate-90 dark:scale-100 dark:rotate-0" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:hidden"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
           </div>
         </div>
       </SidebarFooter>

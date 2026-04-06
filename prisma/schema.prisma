@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:../db/databridge.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Agency {
@@ -44,21 +44,24 @@ model SmeClient {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  role      String   @default("SME") // SME, AGENCY_ADMIN, SUPER_ADMIN
-  avatar    String   @default("")
-  isActive  Boolean  @default(true)
-  agencyId  String?
-  orgId     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  agency    Agency?  @relation(fields: [agencyId], references: [id])
-  activities ActivityLog[]
-  reports    Report[]
+  id            String    @id @default(cuid())
+  name          String?   // Merged firstName/lastName for NextAuth compatibility
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // Optional: kept for legacy or local auth
+  role          String    @default("SME") // SME, AGENCY_ADMIN, SUPER_ADMIN
+  isActive      Boolean   @default(true)
+  agencyId      String?
+  orgId         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  agency        Agency?   @relation(fields: [agencyId], references: [id])
+  activities    ActivityLog[]
+  reports       Report[]
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model DataSource {
@@ -70,6 +73,9 @@ model DataSource {
   status         String   @default("active") // active, paused, error
   lastSync       DateTime?
   syncFrequency  String   @default("daily") // hourly, daily, weekly
+  accessToken    String?  // OAuth 2.0 Integration
+  refreshToken   String?  // OAuth 2.0 Integration
+  expiresAt      Int?     // OAuth 2.0 Integration
   clientId       String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -273,4 +279,40 @@ model PipelineLog {
   rowsProcessed Int    @default(0)
   createdAt   DateTime @default(now())
   pipeline    Pipeline @relation(fields: [pipelineId], references: [id])
+}
+
+// NextAuth Required Models
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

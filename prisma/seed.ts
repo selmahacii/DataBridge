@@ -243,14 +243,14 @@ async function seed() {
   // Users
   console.log("Creating users...");
   const users = await Promise.all([
-    db.user.create({ data: { email: "admin@databridge.io", password: "$2b$10$placeholder_hash_for_demo", firstName: "Sarah", lastName: "Chen", role: "SUPER_ADMIN", isActive: true } }),
-    db.user.create({ data: { email: "marie@nexusdigital.com", password: "$2b$10$placeholder_hash_for_demo", firstName: "Marie", lastName: "Dubois", role: "AGENCY_ADMIN", agencyId: agencies[0].id, isActive: true } }),
-    db.user.create({ data: { email: "james@peakmedia.com", password: "$2b$10$placeholder_hash_for_demo", firstName: "James", lastName: "Wilson", role: "AGENCY_ADMIN", agencyId: agencies[1].id, isActive: true } }),
+    db.user.create({ data: { email: "admin@databridge.io", password: "$2b$10$placeholder_hash_for_demo", name: "Sarah Chen", role: "SUPER_ADMIN", isActive: true } }),
+    db.user.create({ data: { email: "marie@nexusdigital.com", password: "$2b$10$placeholder_hash_for_demo", name: "Marie Dubois", role: "AGENCY_ADMIN", agencyId: agencies[0].id, isActive: true } }),
+    db.user.create({ data: { email: "james@peakmedia.com", password: "$2b$10$placeholder_hash_for_demo", name: "James Wilson", role: "AGENCY_ADMIN", agencyId: agencies[1].id, isActive: true } }),
     ...clients.slice(0, 4).map((c) =>
-      db.user.create({ data: { email: `analyst@${c.slug}.com`, password: "$2b$10$placeholder_hash_for_demo", firstName: "Analyst", lastName: c.name.split(" ")[0], role: "SME", agencyId: c.agencyId, isActive: true } })
+      db.user.create({ data: { email: `analyst@${c.slug}.com`, password: "$2b$10$placeholder_hash_for_demo", name: `Analyst ${c.name.split(" ")[0]}`, role: "SME", agencyId: c.agencyId, isActive: true } })
     ),
     ...clients.slice(4, 8).map((c) =>
-      db.user.create({ data: { email: `ops@${c.slug}.com`, password: "$2b$10$placeholder_hash_for_demo", firstName: "Operator", lastName: c.name.split(" ")[0], role: "SME", agencyId: c.agencyId, isActive: true } })
+      db.user.create({ data: { email: `ops@${c.slug}.com`, password: "$2b$10$placeholder_hash_for_demo", name: `Operator ${c.name.split(" ")[0]}`, role: "SME", agencyId: c.agencyId, isActive: true } })
     ),
   ]);
 

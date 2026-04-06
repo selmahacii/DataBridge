@@ -8,17 +8,37 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:./db/databridge.db
-    volumes:
-      - db-data:/app/db
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/databridge?schema=public
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=fallback_secret_for_local_dev
+    depends_on:
+      - postgres
+      - redis
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: databridge-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=databridge
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: databridge-redis
+    ports:
+      - "6389:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
 volumes:
-  db-data:
-    driver: local
+  postgres_data:
+  redis_data:

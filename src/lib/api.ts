@@ -18,34 +18,40 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   // Dashboard
-  getDashboardStats: () => request<Record<string, unknown>>("/dashboard/stats"),
+  getDashboardStats: (clientId?: string | null) => 
+    request<Record<string, unknown>>(`/dashboard/stats${clientId ? `?clientId=${clientId}` : ""}`),
   getChartData: (params: string) => request<Record<string, unknown>>(`/dashboard/chart?${params}`),
-  getGoals: () => request<any[]>("/dashboard/goals"),
-  getAlerts: () => request<any[]>("/dashboard/alerts"),
+  getGoals: (clientId?: string | null) => 
+    request<any[]>(`/dashboard/goals${clientId ? `?clientId=${clientId}` : ""}`),
+  getAlerts: (clientId?: string | null) => 
+    request<any[]>(`/dashboard/alerts${clientId ? `?clientId=${clientId}` : ""}`),
 
   // Clients
-  getClients: () => request("/clients"),
+  getClients: () => request<any[]>("/clients"),
   getClient: (id: string) => request(`/clients/${id}`),
   createClient: (data: Record<string, unknown>) => request("/clients", { method: "POST", body: JSON.stringify(data) }),
   updateClient: (id: string, data: Record<string, unknown>) => request(`/clients/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteClient: (id: string) => request(`/clients/${id}`, { method: "DELETE" }),
 
   // Sources
-  getSources: () => request("/sources"),
+  getSources: (clientId?: string | null) => 
+    request<any[]>(`/sources${clientId ? `?clientId=${clientId}` : ""}`),
   getSource: (id: string) => request(`/sources/${id}`),
   createSource: (data: Record<string, unknown>) => request("/sources", { method: "POST", body: JSON.stringify(data) }),
   updateSource: (id: string, data: Record<string, unknown>) => request(`/sources/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteSource: (id: string) => request(`/sources/${id}`, { method: "DELETE" }),
 
   // Pipelines
-  getPipelines: () => request("/pipelines"),
+  getPipelines: (clientId?: string | null) => 
+    request<any[]>(`/pipelines${clientId ? `?clientId=${clientId}` : ""}`),
   getPipeline: (id: string) => request(`/pipelines/${id}`),
   createPipeline: (data: Record<string, unknown>) => request("/pipelines", { method: "POST", body: JSON.stringify(data) }),
   updatePipeline: (id: string, data: Record<string, unknown>) => request(`/pipelines/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deletePipeline: (id: string) => request(`/pipelines/${id}`, { method: "DELETE" }),
 
   // Reports
-  getReports: () => request("/reports"),
+  getReports: (clientId?: string | null) => 
+    request<any[]>(`/reports${clientId ? `?clientId=${clientId}` : ""}`),
   createReport: (data: Record<string, unknown>) => request("/reports", { method: "POST", body: JSON.stringify(data) }),
   deleteReport: (id: string) => request(`/reports/${id}`, { method: "DELETE" }),
 
@@ -68,7 +74,8 @@ export const api = {
   deleteAgency: (id: string) => request(`/agencies/${id}`, { method: "DELETE" }),
 
   // Activity
-  getActivity: (limit?: number) => request(`/activity?limit=${limit || 50}`),
+  getActivity: (limit?: number, clientId?: string | null) => 
+    request<any[]>(`/activity?limit=${limit || 50}${clientId ? `&clientId=${clientId}` : ""}`),
 
   // Branding
   getBranding: () => request("/branding"),

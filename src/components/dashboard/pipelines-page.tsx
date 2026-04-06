@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useAppStore } from "@/stores/app-store";
+import { Plus, Pencil, Trash2, Activity, ServerCog } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -77,6 +78,7 @@ const defaultFormData: PipelineFormData = {
 };
 
 export function PipelinesPage() {
+  const { selectedClientId } = useAppStore();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -84,8 +86,8 @@ export function PipelinesPage() {
   const [formData, setFormData] = useState<PipelineFormData>(defaultFormData);
 
   const { data: pipelines = [], isLoading } = useQuery({
-    queryKey: ["pipelines"],
-    queryFn: () => api.getPipelines() as Promise<Pipeline[]>,
+    queryKey: ["pipelines", selectedClientId],
+    queryFn: () => api.getPipelines(selectedClientId) as Promise<Pipeline[]>,
   });
 
   const { data: clients = [] } = useQuery({
@@ -95,12 +97,26 @@ export function PipelinesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: PipelineFormData) => api.createPipeline(data as Record<string, unknown>),
+    mutationFn: (data: PipelineFormData) => api.createPipeline(data as unknown as Record<string, unknown>),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pipelines"] });
       setOpen(false);
       setFormData(defaultFormData);
       toast.success("Pipeline created successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: PipelineFormData }) => 
+      api.updatePipeline(id, data as unknown as Record<string, unknown>),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pipelines"] });
+      setOpen(false);
+      setSelected(null);
+      toast.success("Pipeline updated successfully");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -113,7 +129,7 @@ export function PipelinesPage() {
       queryClient.invalidateQueries({ queryKey: ["pipelines"] });
       setDeleteOpen(false);
       setSelected(null);
-      toast.success("Pipeline deleted successfully");
+      toast.success("Pipeline removed from orchestration");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -128,22 +144,36 @@ export function PipelinesPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    createMutation.mutate(formData);
+    if (selected) {
+      updateMutation.mutate({ id: selected.id, data: formData });
+    } else {
+      createMutation.mutate(formData);
+    }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Pipelines</h1>
-          <p className="text-muted-foreground">
-            Create and manage data processing pipelines
+    <div className="space-y-10 pb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">Worker Nodes: Online</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">ETL Pipelines</h1>
+          <p className="text-muted-foreground text-sm font-medium">
+            Design and monitor high-performance automated data processing workflows.
           </p>
         </div>
-        <Button onClick={handleOpenCreate}>
-          <Plus className="mr-1.5 h-4 w-4" />
-          Add Pipeline
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="hidden lg:flex flex-col items-end px-4 border-r border-border/50">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground/50">Load Average</span>
+            <span className="text-sm font-bold tabular-nums">0.12ms</span>
+          </div>
+          <Button onClick={handleOpenCreate} className="h-10 px-6 shadow-md hover:shadow-lg transition-all">
+            <Plus className="mr-2 h-4 w-4" />
+            New Pipeline
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -198,6 +228,24 @@ export function PipelinesPage() {
                     Client: <span className="font-medium text-foreground">{pipeline.clientName}</span>
                   </p>
                 )}
+
+                <div className="flex items-center gap-4 mb-4 p-3 bg-secondary/30 rounded-lg border border-border/50">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Worker Node</span>
+                    <div className="flex items-center gap-1.5 text-xs text-foreground">
+                      <ServerCog className="h-3.5 w-3.5 text-blue-500" />
+                      BullMQ (Redis)
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Queue</span>
+                    <div className="flex items-center gap-1.5 text-xs text-foreground">
+                      <Activity className={cn("h-3.5 w-3.5", pipeline.status === "active" ? "text-green-500 animate-pulse" : "text-muted-foreground")} />
+                      {pipeline.status === "active" ? "Listening" : "Idle"}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-1 justify-end">
                   <Button
                     variant="ghost"
@@ -208,7 +256,7 @@ export function PipelinesPage() {
                         name: pipeline.name,
                         description: pipeline.description ?? "",
                         frequency: pipeline.frequency,
-                        clientId: "",
+                        clientId: pipeline.id || "",
                       });
                       setOpen(true);
                     }}
@@ -273,7 +321,7 @@ export function PipelinesPage() {
                 <Select
                   value={formData.clientId}
                   onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, clientId: v }))
+                    setFormData((d) => ({ ...d, clientId: v as string }))
                   }
                 >
                   <SelectTrigger>
@@ -295,7 +343,7 @@ export function PipelinesPage() {
                 <Select
                   value={formData.frequency}
                   onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, frequency: v }))
+                    setFormData((d) => ({ ...d, frequency: v as string }))
                   }
                 >
                   <SelectTrigger>

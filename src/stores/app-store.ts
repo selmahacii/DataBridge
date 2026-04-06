@@ -12,12 +12,11 @@ export type Page =
   | "branding"
   | "ai-chat";
 
-// simple client-side page router. we don't use next/link because all pages
-// are client components rendered inside AppShell based on this state.
-
 interface AppState {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
+  selectedClientId: string | null;
+  setSelectedClientId: (id: string | null) => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   theme: "light" | "dark";
@@ -27,6 +26,8 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   currentPage: "dashboard",
   setCurrentPage: (page) => set({ currentPage: page }),
+  selectedClientId: null,
+  setSelectedClientId: (id) => set({ selectedClientId: id }),
   sidebarOpen: true,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   theme: "light",
