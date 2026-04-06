@@ -478,8 +478,8 @@ export function ReportsPage() {
                     <p className="text-xs text-muted-foreground font-medium">Historical trend analysis derived from cross-channel signals.</p>
                   </div>
                 </div>
-                <div className="h-[300px] w-full bg-accent/20 rounded-3xl border border-border/20 p-6">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="h-[300px] min-h-[300px] w-full bg-accent/20 rounded-3xl border border-border/20 p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                     <AreaChart
                       data={[
                         { name: 'Jan', val: 4000 },

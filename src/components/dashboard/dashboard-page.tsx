@@ -323,7 +323,7 @@ export function DashboardPage() {
                     <YAxis tickLine={false} axisLine={false} tickMargin={12} className="text-[10px] font-medium" />
                     <ChartTooltip
                       content={<ChartTooltipContent />}
-                      labelFormatter={(value: string) =>
+                      labelFormatter={(value: any) =>
                         new Date(value).toLocaleDateString("en-US", {
                           month: "long",
                           year: "numeric",

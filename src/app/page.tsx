@@ -21,7 +21,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Popover, 
@@ -33,6 +33,7 @@ import { Search, Bell, Menu, LayoutGrid, AlertCircle, Info } from "lucide-react"
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const pageMap: Record<string, React.ComponentType> = {
   dashboard: DashboardPage,
@@ -49,6 +50,12 @@ const pageMap: Record<string, React.ComponentType> = {
 
 export default function Home() {
   const { currentPage, selectedClientId, setSelectedClientId } = useAppStore();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const PageComponent = pageMap[currentPage] ?? DashboardPage;
 
   const { data: clients = [] } = useQuery({
@@ -59,8 +66,10 @@ export default function Home() {
   const { data: alerts = [] } = useQuery({
     queryKey: ["global-alerts"],
     queryFn: () => api.getAlerts() as Promise<any[]>,
-    refetchInterval: 30000, // every 30s
+    refetchInterval: 30000, 
   });
+
+  if (!mounted) return null;
 
   return (
     <SidebarProvider>
@@ -77,7 +86,7 @@ export default function Home() {
                 value={selectedClientId || "all"}
                 onValueChange={(val) => setSelectedClientId(val === "all" ? null : val)}
               >
-                <SelectTrigger className="h-9 w-[220px] rounded-lg border-none bg-accent/30 font-medium hover:bg-accent/50 transition-colors focus:ring-1 focus:ring-primary/20">
+                <SelectTrigger className="h-9 w-[220px] rounded-lg border-none bg-accent/30 font-medium hover:bg-accent/50 transition-colors focus:ring-1 focus:ring-primary/20" size="sm">
                   <SelectValue placeholder="All Clients (Aggregate)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -103,13 +112,14 @@ export default function Home() {
             </div>
             
             <Popover>
-              <PopoverTrigger>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg relative">
-                  <Bell className="h-4 w-4" />
-                  {alerts.length > 0 && (
-                    <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                  )}
-                </Button>
+              <PopoverTrigger className={cn(
+                buttonVariants({ variant: "ghost", size: "icon" }),
+                "h-9 w-9 rounded-lg relative"
+              )}>
+                <Bell className="h-4 w-4" />
+                {alerts.length > 0 && (
+                  <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                )}
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0 border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl" align="end">
                 <div className="p-4 border-b border-border/50 bg-muted/30">
