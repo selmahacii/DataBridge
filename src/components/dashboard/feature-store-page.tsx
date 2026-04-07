@@ -111,7 +111,7 @@ export function FeatureStorePage() {
          setFeatures([newFeature, ...features]);
          setIsRegistering(false);
          setOpen(false);
-         return 'Feature successfully registered and available for inference.';
+         return 'Feature successfully registered and available for strategic prediction.';
        },
        error: 'Schema validation failed. Check data types.',
      });
@@ -151,8 +151,8 @@ export function FeatureStorePage() {
             <ChevronLeft className="h-3 w-3" />
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Back to Performance Overview</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight tracking-tighter">AI Feature Store</h1>
-          <p className="text-muted-foreground text-sm font-medium">Unified repository for ML-ready features and inference signals.</p>
+          <h1 className="text-3xl font-black tracking-tight tracking-tighter">Strategic Feature Signal Store</h1>
+          <p className="text-muted-foreground text-sm font-medium">Unified repository for high-fidelity production features and strategic signals.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-9 font-bold px-4 border-border/50" onClick={handleExport}>
@@ -172,7 +172,7 @@ export function FeatureStorePage() {
                    <DialogHeader className="space-y-3">
                       <DialogTitle className="text-2xl font-black tracking-tighter text-foreground">Register New Feature</DialogTitle>
                       <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
-                         Map a high-fidelity signal for ML ingestion.
+                         Map a high-fidelity signal for analytical ingestion.
                       </DialogDescription>
                    </DialogHeader>
                    <div className="grid gap-6 py-8">
@@ -354,7 +354,7 @@ export function FeatureStorePage() {
                        <div className="flex flex-col gap-1.5 w-24">
                           <span className="text-[10px] font-black italic">{f.coverage}%</span>
                           <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                             <div className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)] rounded-full transition-all duration-1000" style={{width: `${f.coverage}%`}} />
+                             <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{width: `${f.coverage}%`}} />
                           </div>
                        </div>
                     </TableCell>

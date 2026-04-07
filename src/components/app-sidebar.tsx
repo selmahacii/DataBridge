@@ -54,8 +54,8 @@ const intelligenceNav: NavItem[] = [
   { label: "Performance Overview", page: "dashboard", icon: LayoutDashboard },
   { label: "Strategic Clients", page: "clients", icon: Users },
   { label: "Automated Reports", page: "reports", icon: FileBarChart },
-  { label: "AI Feature Store", page: "feature-store", icon: Package },
-  { label: "Inference Results", page: "inference-results", icon: BrainCircuit },
+  { label: "Feature Pipeline Store", page: "feature-store", icon: GitBranch },
+  { label: "Predictive Outcomes", page: "inference-results", icon: Activity },
 ];
 
 const operationsNav: NavItem[] = [
@@ -63,7 +63,7 @@ const operationsNav: NavItem[] = [
   { label: "ETL Pipelines", page: "pipelines", icon: GitBranch },
   { label: "Pipeline Status", page: "pipeline-status", icon: Activity },
   { label: "Data Quality Center", page: "data-quality", icon: ShieldCheck },
-  { label: "Intelligence Sync", page: "ai-chat", icon: MessageSquare },
+  { label: "Expert Logic Sync", page: "ai-chat", icon: MessageSquare },
 ];
 
 const administrationNav: NavItem[] = [
@@ -99,7 +99,7 @@ export function AppSidebar() {
       
       <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Intelligence & ML</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Strategic Analytics</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {intelligenceNav.map((item) => (

@@ -21,7 +21,7 @@ const initialMessages: Message[] = [
     id: "1",
     role: "assistant",
     content:
-      "Hello! I am your DataBridge Data Analyst. I can help you with data analysis, report generation, pipeline configuration, and more. How can I help you today?",
+      "Hello! I am your Strategic Analytics Partner. I'm here to assist with granular data deep-dives, custom report synthesis, and complex pipeline orchestration. How can I support your project today?",
     timestamp: new Date(Date.now() - 60000 * 5),
   },
   {
@@ -40,7 +40,7 @@ const initialMessages: Message[] = [
   },
 ];
 
-export function AiChatPage() {
+export function ExpertLogicSyncPage() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -86,9 +86,9 @@ export function AiChatPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data Analyst</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Expert Logic Sync</h1>
         <p className="text-muted-foreground">
-          Ask questions about your data and get contextual insights
+          Consult with strategic frameworks and gain contextual project intelligence
         </p>
       </div>
 

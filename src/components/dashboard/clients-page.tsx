@@ -307,39 +307,40 @@ export function ClientsPage() {
       {/* Traceability & Detailed Info View - Structured & Hierarchical */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="max-w-[95vw] lg:max-w-[1500px] w-full h-[92vh] border-border/40 bg-background/98 backdrop-blur-3xl p-0 overflow-hidden rounded-[3rem] shadow-2xl flex flex-col">
-          {/* 1. HERO HEADER - STICKY IDENTITY */}
-          <div className="shrink-0 z-30 sticky top-0 bg-background/80 backdrop-blur-xl border-b border-border/60 px-12 py-8">
-             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div className="flex items-center gap-6">
-                   <div className="h-16 w-16 rounded-[1.5rem] bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 ring-4 ring-primary/10">
-                      <Target className="h-8 w-8 text-white" />
+          {/* 1. HERO HEADER - RADIANT MACHINE IDENTITY */}
+          <div className="shrink-0 z-30 sticky top-0 bg-background/95 backdrop-blur-3xl border-b-2 border-border/60 px-12 py-10">
+             <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+                <div className="flex items-center gap-8">
+                   <div className="h-16 w-16 rounded-[1.25rem] bg-foreground flex items-center justify-center shadow-2xl shadow-black/20 ring-4 ring-muted">
+                      <Target className="h-8 w-8 text-background" />
                    </div>
-                   <div className="space-y-1.5">
-                      <div className="flex items-center gap-3">
-                         <Badge className="bg-primary hover:bg-primary text-white text-[9px] font-black uppercase tracking-[0.25em] px-3 h-5 border-none shadow-lg shadow-primary/20">
-                            MASTER ACCOUNT
-                         </Badge>
-                         <span className="text-[11px] font-black text-muted-foreground/40 tabular-nums tracking-widest whitespace-nowrap">ID_{selected?.id?.substr(0, 14)}</span>
+                   <div className="space-y-2">
+                      <div className="flex items-center gap-4">
+                         <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground">MASTER_ACCOUNT</span>
+                         </div>
+                         <div className="h-4 w-[1px] bg-border" />
+                         <span className="text-[11px] font-mono font-medium text-muted-foreground/60 tabular-nums lowercase tracking-tighter italic">sys_id: {selected?.id?.substr(0, 16)}</span>
                       </div>
-                      <h2 className="text-4xl font-black tracking-tighter text-foreground leading-none">{selected?.name}</h2>
+                      <h2 className="text-5xl font-black tracking-tightest text-foreground leading-none">{selected?.name}</h2>
                    </div>
                 </div>
 
-                <div className="flex items-center gap-8">
-                   <div className="flex flex-col items-end border-r-2 border-border/60 pr-8">
-                      <span className="text-[10px] font-black uppercase text-muted-foreground/30 tracking-[0.2em] mb-1">Local Node Cluster</span>
-                      <div className="flex items-center gap-2">
-                         <div className="h-2 w-2 rounded-full bg-primary" />
-                         <span className="text-sm font-black tracking-tight text-foreground/80 uppercase">EMEA_CENTRAL_01</span>
+                <div className="flex items-center gap-10">
+                   <div className="flex flex-col items-end border-r-2 border-border/40 pr-10">
+                      <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-[0.4em] mb-1.5">DATA_NODE_CLUSTER</span>
+                      <div className="flex items-center gap-2.5">
+                         <span className="text-sm font-mono font-bold tracking-tight text-foreground/80 uppercase">EMEA_CENTRAL_01</span>
                       </div>
                    </div>
-                   <div className="flex items-center gap-5 bg-muted/30 border-2 border-border/60 rounded-[1.5rem] px-6 py-3 shadow-inner">
+                   <div className="flex items-center gap-6 bg-muted/20 border-2 border-border/40 rounded-[1.5rem] px-7 py-4">
                       <div className="flex flex-col items-end">
-                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Network Handshake</span>
-                         <span className="text-xs font-black text-green-500 uppercase tracking-widest">ENCRYPTED_LIVE</span>
+                         <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">HANDSHAKE_PROTOCOL</span>
+                         <span className="text-[11px] font-mono font-black text-green-500 uppercase tracking-widest whitespace-nowrap">STATUS: ENCRYPTED_LIVE</span>
                       </div>
-                      <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
-                         <Activity className="h-5 w-5 text-green-500 animate-pulse" />
+                      <div className="h-10 w-10 rounded-[1rem] border-2 border-green-500/20 bg-green-500/5 flex items-center justify-center">
+                         <Activity className="h-5 w-5 text-green-500 animate-[pulse_2s_infinite]" />
                       </div>
                    </div>
                 </div>
@@ -436,21 +437,22 @@ export function ClientsPage() {
                    <div className="flex items-center justify-between border-b-2 border-border/40 pb-8">
                       <div className="flex items-center gap-4">
                          <div className="h-[2px] w-12 bg-primary" />
-                         <h3 className="font-black text-xs uppercase tracking-[0.3em] text-foreground/40">Audit Orchestration Trace</h3>
+                         <h3 className="font-black text-xs uppercase tracking-[0.3em] text-foreground/40">Operational Audit & Trace</h3>
                       </div>
-                      <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest px-4 border-2 border-border/60 bg-background">Snapshot: Last 168h</Badge>
+                      <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest px-4 border-2 border-border/60 bg-background">EPOCH: Q2-2026-ACTIVE</Badge>
                    </div>
 
                    <div className="space-y-12 relative before:absolute before:left-[17px] before:top-4 before:bottom-4 before:w-[2px] before:bg-border/60">
                       {[
-                         { date: 'Operational Status: Today', events: [
-                            { action: 'Signal Recalibration', desc: 'Normalized attribution weights for Q1 global cluster', ts: '2h ago', level: 'info' }
+                         { date: 'Operational Cycle: Today', events: [
+                            { action: 'Signal Recalibration', desc: 'Normalized attribution weights for GA4 multi-property global cluster', ts: '2h 14m ago', level: 'info' },
+                            { action: 'API Secret Rotation', desc: 'Secure handshake successful via AWS Secret Manager for Meta Ads node', ts: '5h 30m ago', level: 'secure' }
                          ]},
-                         { date: 'Strategic Timeline: Recent', events: [
-                            { action: 'Intelligence Synthesis', desc: 'Compiled archival performance narrative for stakeholder review', ts: '1d ago', level: 'info' },
-                            { action: 'Credential Rotation protocol', desc: 'Securely refreshed API handshakes for global nodes', ts: '2d ago', level: 'secure' },
-                            { action: 'Workforce Scaling Event', desc: 'Auto-scaled Flink cluster memory for ingress surge', ts: '3d ago', level: 'warning' },
-                            { action: 'Metadata Mapping update', desc: `Injected latest sector taxonomy: ${selected?.industry}`, ts: '5d ago', level: 'info' }
+                         { date: 'Execution History: Last 72 Hours', events: [
+                            { action: 'Strategic Intelligence synthesis', desc: 'Auto-generated 14-page Strategic Performance Report (PDF/JSON)', ts: '1d ago', level: 'info' },
+                            { action: 'Infrastructure Self-Healing', desc: 'Dynamically reallocated Flink worker memory on pod cluster B-12', ts: '2d ago', level: 'warning' },
+                            { action: 'Cross-Source Schema Sync', desc: `Verified industrial taxonomy alignment for ${selected?.industry} sector`, ts: '2d ago', level: 'info' },
+                            { action: 'Ingress Point Verification', desc: 'Domain validation successful for primary analytics endpoint', ts: '3d ago', level: 'info' }
                          ]}
                       ].map((group, groupIdx) => (
                          <div key={groupIdx} className="space-y-6">
@@ -460,10 +462,10 @@ export function ClientsPage() {
                             </div>
                             <div className="space-y-4 pl-12">
                                {group.events.map((event, eventIdx) => (
-                                  <div key={eventIdx} className="p-6 rounded-[2rem] bg-background border-2 border-border/40 flex items-center justify-between transition-all hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30 group relative">
+                                  <div key={eventIdx} className="p-6 rounded-[2rem] bg-background border-2 border-border/40 flex items-center justify-between transition-all hover:bg-muted/5 hover:border-primary/30 group relative">
                                      <div className="flex items-center gap-5">
                                         <div className={cn(
-                                           "h-3 w-3 rounded-full border-2 border-background shadow-sm",
+                                           "h-3 w-3 rounded-full border-2 border-background shadow-lg",
                                            event.level === 'warning' ? "bg-amber-500 animate-bounce" : "bg-primary"
                                         )} />
                                         <div className="flex flex-col gap-0.5">
@@ -471,7 +473,7 @@ export function ClientsPage() {
                                            <span className="text-xs text-muted-foreground font-bold opacity-70 tracking-tight">{event.desc}</span>
                                         </div>
                                      </div>
-                                     <Badge variant="secondary" className="text-[10px] font-black tabular-nums tracking-widest bg-muted border-none opacity-50">{event.ts}</Badge>
+                                     <Badge variant="secondary" className="text-[10px] font-black tabular-nums tracking-widest bg-muted border-none opacity-50 px-3">{event.ts}</Badge>
                                   </div>
                                 ))}
                             </div>
@@ -480,8 +482,8 @@ export function ClientsPage() {
                    </div>
 
                    <div className="pt-12">
-                      <Button className="w-full h-16 rounded-[2rem] bg-primary text-white font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl shadow-primary/30 hover:scale-[1.01] hover:shadow-primary/40 active:scale-[0.98] transition-all">
-                         DECRYPT & DOWNLOAD AUDIT ARCHIVE
+                      <Button className="w-full h-16 rounded-[2rem] bg-primary text-white font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl shadow-primary/5 hover:scale-[1.01] hover:bg-primary transition-all active:scale-[0.98]">
+                         ARCHIVE & DOWNLOAD CRYPTOGRAPHIC AUDIT (PDF)
                       </Button>
                    </div>
                 </div>
