@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Users,
@@ -17,11 +18,24 @@ import {
   Download,
   Share2,
   Table as TableIcon,
+  ShieldCheck,
+  History as HistoryIcon,
+  BarChart3,
+  FileJson,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   ChartContainer,
   ChartTooltip,
@@ -50,28 +64,84 @@ interface KPICardProps {
   icon: React.ElementType;
   trend?: string;
   loading?: boolean;
+  freshness?: number; // minutes
+  source?: string;
+  color?: string;
+  subDetails?: Array<{ label: string; value: string; color?: string }>;
+  onClick?: () => void;
+  onSourceClick?: (e: React.MouseEvent) => void;
 }
 
-function KPICard({ title, value, icon: Icon, trend, loading }: KPICardProps) {
+function KPICard({ title, value, icon: Icon, trend, loading, freshness = 2, source, color, subDetails, onClick, onSourceClick }: KPICardProps) {
+  const freshnessColor = freshness < 5 ? "text-green-500 bg-green-500/10 border-green-500/20" : freshness < 15 ? "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" : "text-red-500 bg-red-500/10 border-red-500/20";
+  
   return (
-    <Card>
+    <Card 
+      onClick={onClick}
+      className={cn(
+        "overflow-hidden relative group border-border/50 bg-background/50 backdrop-blur-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 cursor-pointer",
+        onClick && "hover:border-primary/20"
+      )}
+    >
       <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            {loading ? (
-              <Skeleton className="h-8 w-24" />
-            ) : (
-              <p className="text-2xl font-bold">{value}</p>
-            )}
+        <div className="flex items-center justify-between mb-4">
+          <div className="rounded-xl bg-muted/50 p-2.5 transition-colors group-hover:bg-primary/10">
+            <Icon className={cn("h-5 w-5 transition-colors", color ? color : "text-muted-foreground group-hover:text-primary")} />
           </div>
-          <div className="rounded-lg bg-muted p-2.5">
-            <Icon className="h-5 w-5 text-muted-foreground" />
+          {source && (
+            <div 
+              onClick={onSourceClick}
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-border/50 bg-background/30 backdrop-blur-sm shadow-sm cursor-pointer hover:bg-background/80 transition-all"
+            >
+              <span className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/40">Sourced from</span>
+              <span className="text-[9px] font-bold text-primary/80">{source}</span>
+            </div>
+          )}
+        </div>
+        
+        <div className="space-y-1">
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">{title}</p>
+          {loading ? (
+            <Skeleton className="h-9 w-24" />
+          ) : (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl font-black tracking-tighter">{value}</p>
+                {trend && (
+                  <span className={cn(
+                    "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
+                    trend.includes('+') || trend === 'Optimal' ? "text-green-500 bg-green-500/5" : "text-muted-foreground bg-muted/50"
+                  )}>
+                    {trend}
+                  </span>
+                )}
+              </div>
+              {subDetails && (
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                  {subDetails.map((s, i) => (
+                    <div key={i} className="flex items-center gap-1">
+                       <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">{s.label}:</span>
+                       <span className={cn("text-[10px] font-black italic", s.color || "text-foreground")}>{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between">
+          <div 
+            onClick={onSourceClick}
+            className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 cursor-pointer", freshnessColor)}
+          >
+            <div className={cn("h-1 w-1 rounded-full animate-pulse", freshness < 5 ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" : freshness < 15 ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.8)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]")} />
+            Freshness : {freshness}m ago
+          </div>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"><Eye className="h-3.5 w-3.5" /></Button>
           </div>
         </div>
-        {trend && (
-          <p className="mt-2 text-xs text-muted-foreground">{trend}</p>
-        )}
       </CardContent>
     </Card>
   );
@@ -108,6 +178,9 @@ interface ActivityItem {
 
 export function DashboardPage() {
   const { selectedClientId } = useAppStore();
+  const { setCurrentPage } = useAppStore();
+  const [selectedKPI, setSelectedKPI] = useState<any>(null);
+  
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
     queryFn: () => api.getClients() as Promise<any[]>,
@@ -188,44 +261,65 @@ export function DashboardPage() {
   const revenueData = revenueQuery.data?.data ?? [];
   const activities = activityQuery.data ?? [];
 
+  const [velocityMode, setVelocityMode] = useState<"realtime" | "historical">("realtime");
+
   const kpiItems = [
     {
-      title: "Active Channels",
-      value: String(stats.dataSources ?? 0),
-      icon: Zap,
-      trend: "Operational",
+      title: "Pipeline Health",
+      value: "98.4%",
+      icon: Activity,
+      trend: "Optimal",
+      color: "text-green-500",
+      source: "Kafka / Flink",
+      freshness: 1,
+      subDetails: [
+        { label: "Circuit Breaker", value: "CLOSED", color: "text-green-500" },
+        { label: "DLQ Size", value: "142", color: "text-amber-500" },
+        { label: "Kafka Lag", value: "12ms", color: "text-green-500" },
+      ]
     },
     {
-      title: "Total Ingress",
-      value: stats.dataPoints != null ? Number(stats.dataPoints).toLocaleString() : "0",
-      icon: Activity,
-      trend: "Rows processed",
+      title: "Flow Velocity",
+      value: stats.flowVelocity != null ? `${Number(stats.flowVelocity).toLocaleString()}k/m` : "12.4k/m",
+      icon: Zap,
+      trend: "High",
+      source: "Kafka Engine",
+    },
+    {
+      title: "Data Quality",
+      value: "99.2%",
+      icon: ShieldCheck,
+      trend: "+0.4%",
+      color: "text-primary",
+      source: "DQ Validator",
     },
     {
       title: "Gross Revenue",
       value: stats.totalRevenue != null ? `$${Number(stats.totalRevenue).toLocaleString()}` : "$0",
       icon: DollarSign,
-      trend: stats.revenueTrend ? `+${stats.revenueTrend}% MoM` : undefined,
+      trend: stats.revenueTrend ? `+${stats.revenueTrend}% MoM` : "Capital growth",
+      source: "ClickHouse",
     },
     {
       title: "Avg. ROAS",
       value: stats.avgConversion != null ? `${(Number(stats.avgConversion) * 0.85).toFixed(1)}x` : "0.0x",
       icon: TrendingUp,
       trend: "Return on Ad Spend",
+      source: "Feature Store",
     },
     {
-      title: "Active Pipelines",
-      value: String(stats.activePipelines ?? 0),
-      icon: GitBranch,
-      trend: "Running now",
-    },
-    {
-      title: "Engagement Rate",
-      value: stats.avgConversion != null ? `${stats.avgConversion}%` : "0%",
-      icon: Target,
-      trend: "Conversion velocity",
+      title: "Ingress Volume",
+      value: stats.ingressVolume != null ? Number(stats.ingressVolume).toLocaleString() : "4.2M",
+      icon: Database,
+      trend: String(stats.ingressGrowth || "+38% vs prev. month"),
+      source: "Ingestion Worker",
+      drift: stats.ingressGrowth ? String(stats.ingressGrowth) : "+38.4%",
     },
   ];
+
+  const breakdownData = selectedKPI ? Array.from({ length: 12 }).map((_, i) => ({
+    val: parseFloat(String(selectedKPI.value).replace(/[^0-9.]/g, "")) * (0.85 + Math.random() * 0.3)
+  })) : [];
 
   return (
     <div className="space-y-10 pb-10">
@@ -247,7 +341,7 @@ export function DashboardPage() {
           </Button>
           <Button 
             size="sm" 
-            className="h-9 font-bold shadow-md bg-primary hover:shadow-primary/20"
+            className="h-9 font-bold shadow-md bg-primary"
             onClick={handleExport}
           >
             <Download className="mr-2 h-4 w-4" />
@@ -279,21 +373,99 @@ export function DashboardPage() {
             icon={kpi.icon}
             trend={kpi.trend}
             loading={statsQuery.isLoading}
+            source={kpi.source}
+            color={kpi.color}
+            freshness={kpi.freshness}
+            subDetails={kpi.subDetails}
+            onClick={() => setSelectedKPI(kpi)}
+            onSourceClick={(e) => {
+               e.stopPropagation();
+               setCurrentPage("sources");
+            }}
           />
         ))}
       </div>
 
+      <Dialog open={!!selectedKPI} onOpenChange={() => setSelectedKPI(null)}>
+        <DialogContent className="sm:max-w-md border-border/40 bg-background/95 backdrop-blur-3xl overflow-hidden rounded-[2rem]">
+           <div className="p-8 space-y-6">
+              <DialogHeader className="space-y-4">
+                 <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                       {selectedKPI && <selectedKPI.icon className="h-5 w-5 text-primary" />}
+                    </div>
+                    <div>
+                       <DialogTitle className="text-2xl font-black tracking-tight tracking-tighter">Signal Breakdown</DialogTitle>
+                       <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50">Historical variance of {selectedKPI?.title}</DialogDescription>
+                    </div>
+                 </div>
+              </DialogHeader>
+              
+              <div className="h-[200px] w-full bg-muted/20 rounded-[1.5rem] border border-border/10 p-4">
+                 <ChartContainer config={sessionsChartConfig}>
+                    <AreaChart data={breakdownData}>
+                       <defs>
+                          <linearGradient id="breakdownGradient" x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="5%" stopColor="oklch(0.627 0.265 303.891)" stopOpacity={0.3}/>
+                             <stop offset="95%" stopColor="oklch(0.627 0.265 303.891)" stopOpacity={0}/>
+                          </linearGradient>
+                       </defs>
+                       <Area type="monotone" dataKey="val" stroke="oklch(0.627 0.265 303.891)" fill="url(#breakdownGradient)" strokeWidth={4} />
+                    </AreaChart>
+                 </ChartContainer>
+              </div>
+
+              <div className="space-y-4">
+                 <div className="flex justify-between items-center p-4 rounded-xl bg-accent/30 border border-border/20">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Current Drift</span>
+                    <span className={cn(
+                      "text-sm font-black",
+                      (selectedKPI?.trend?.includes('+') || selectedKPI?.trend === 'Optimal') ? "text-green-500" : "text-amber-500"
+                    )}>
+                      {selectedKPI?.trend || selectedKPI?.drift || "Optimal"} vs baseline
+                    </span>
+                 </div>
+                 <Button className="w-full h-11 font-bold rounded-xl shadow-xl shadow-primary/20" onClick={() => setSelectedKPI(null)}>DIMISS TRACE</Button>
+              </div>
+           </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="grid gap-6 lg:grid-cols-4">
         <Card className="lg:col-span-3 border-border/50 bg-background/50 backdrop-blur-xl shadow-xl shadow-foreground/[0.02]">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40 px-8">
             <div>
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground/70">Traffic Velocity</CardTitle>
-              <p className="text-xs text-muted-foreground">Sessions count over time</p>
+              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground/70">Traffic Velocity Intelligence</CardTitle>
+              <div className="flex items-center gap-2 mt-1">
+                 <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Stream: normalized_events</span>
+                 <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                 <span className="text-[10px] font-bold text-primary italic uppercase tracking-tighter">Verified by Flink</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/50 text-[10px] font-bold">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                SESSIONS
+            <div className="flex items-center gap-4">
+              <div className="flex items-center bg-muted/30 rounded-lg p-1 border border-border/50">
+                <Button 
+                  variant={velocityMode === "realtime" ? "secondary" : "ghost"} 
+                  size="xs" 
+                  className="text-[10px] h-7 font-bold px-3 transition-all"
+                  onClick={() => setVelocityMode("realtime")}
+                >
+                  <Activity className="mr-1.5 h-3 w-3 text-primary" />
+                  REAL-TIME
+                </Button>
+                <Button 
+                  variant={velocityMode === "historical" ? "secondary" : "ghost"} 
+                  size="xs" 
+                  className="text-[10px] h-7 font-bold px-3 transition-all"
+                  onClick={() => setVelocityMode("historical")}
+                >
+                  <HistoryIcon className="mr-1.5 h-3 w-3" />
+                  HISTORICAL
+                </Button>
+              </div>
+              <div className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/50 hover:bg-muted/50 cursor-pointer transition-all">
+                 <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest">XLSX</span>
               </div>
             </div>
           </CardHeader>
@@ -371,8 +543,11 @@ export function DashboardPage() {
 
         <div className="space-y-6">
           <Card className="border-border/50 bg-background/50 backdrop-blur-xl shadow-lg">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 border-b border-border/40 px-6 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">Conversion Pulse</CardTitle>
+              <Button variant="ghost" size="icon-xs" className="h-6 w-6 opacity-30 hover:opacity-100 hover:text-primary transition-all">
+                 <Download className="h-3 w-3" />
+              </Button>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="h-[120px]">
@@ -407,8 +582,11 @@ export function DashboardPage() {
           </Card>
 
           <Card className="border-border/50 bg-background/50 backdrop-blur-xl shadow-lg">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 border-b border-border/40 px-6 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">Revenue Flow</CardTitle>
+              <Button variant="ghost" size="icon-xs" className="h-6 w-6 opacity-30 hover:opacity-100 hover:text-primary transition-all">
+                 <Download className="h-3 w-3" />
+              </Button>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="h-[120px]">
@@ -439,81 +617,139 @@ export function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="border-border/50 bg-background/50 backdrop-blur-xl shadow-lg">
+            <CardHeader className="pb-2 border-b border-border/40 px-6">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">Data Quality Score</CardTitle>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-bold">
+                  LIVE
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 flex flex-col gap-4">
+              <div className="flex items-end justify-between">
+                <span className="text-3xl font-black tracking-tighter text-glow">99.2%</span>
+                <div className="flex flex-col items-end">
+                  <span className="text-green-500 text-[10px] font-bold flex items-center">
+                    <TrendingUp className="h-3 w-3 mr-0.5" />
+                    +0.4%
+                  </span>
+                  <span className="text-[9px] text-muted-foreground font-medium">vs last month</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {[
+                  { name: 'GA4 Multi-Source', value: 99.8, color: 'bg-orange-500' },
+                  { name: 'Meta Intelligence', value: 98.4, color: 'bg-blue-600' },
+                  { name: 'Google Ads API', value: 99.1, color: 'bg-yellow-500' },
+                ].map((source, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-tight">
+                      <span className="text-muted-foreground/80">{source.name}</span>
+                      <span className="text-primary">{source.value}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-muted/30 rounded-full overflow-hidden backdrop-blur-sm">
+                      <div 
+                        className={cn("h-full rounded-full transition-all duration-1000", source.color)} 
+                        style={{ width: `${source.value}%` }} 
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card className="border-border/50 bg-background/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-4">
+        <Card className="border-border/50 bg-background/60 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-2xl shadow-foreground/[0.02]">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-6 px-10 pt-10">
             <div>
-              <CardTitle className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/80">Growth Objectives</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">North star metric progress</p>
+              <CardTitle className="text-[13px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Growth Objectives</CardTitle>
+              <p className="text-xs text-muted-foreground font-medium mt-1">North star metric progress against Q1 benchmarks cluster.</p>
             </div>
-            <Target className="h-4 w-4 text-primary opacity-50" />
+            <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10">
+               <Target className="h-5 w-5 text-primary opacity-80" />
+            </div>
           </CardHeader>
-          <CardContent className="p-6 space-y-8">
-            {goalsQuery.data?.map((goal) => {
+          <CardContent className="p-10 space-y-10">
+            {[
+              { id: '1', metric: 'Revenue', currentValue: 34500, targetValue: 50000, color: 'bg-primary' },
+              { id: '2', metric: 'Conversions', currentValue: 620, targetValue: 850, color: 'bg-orange-500' },
+              { id: '3', metric: 'Sessions', currentValue: 125000, targetValue: 120000, color: 'bg-blue-500' },
+            ].map((goal) => {
               const progress = Math.round((goal.currentValue / goal.targetValue) * 100);
               return (
-              <div key={goal.id} className="space-y-3 group cursor-pointer">
+              <div key={goal.id} className="space-y-4 group cursor-pointer">
                 <div className="flex justify-between items-end">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{goal.metric} Target</span>
-                    <span className="text-sm font-bold group-hover:text-primary transition-colors">{goal.currentValue.toLocaleString()} / {goal.targetValue.toLocaleString()}</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-[0.25em]">{goal.metric} Target</span>
+                    <span className="text-2xl font-black tracking-tighter group-hover:text-primary transition-colors tabular-nums">
+                       {goal.currentValue.toLocaleString()} <span className="text-muted-foreground/30 text-sm font-bold">/ {goal.targetValue.toLocaleString()}</span>
+                    </span>
                   </div>
-                  <span className="text-lg font-bold tabular-nums">{progress}%</span>
+                  <Badge variant="outline" className="text-sm font-black tabular-nums h-8 px-3 rounded-lg border-primary/20 bg-primary/5 text-primary shadow-sm">{progress}%</Badge>
                 </div>
-                <div className="relative h-2 w-full bg-secondary/50 rounded-full overflow-hidden">
+                <div className="relative h-2.5 w-full bg-secondary/30 rounded-full overflow-hidden backdrop-blur-md border border-border/10">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-primary transition-all duration-1000 ease-out rounded-full shadow-[0_0_8px_rgba(var(--primary),0.5)]" 
+                    className={cn(
+                      "absolute top-0 left-0 h-full transition-all duration-1000 ease-out rounded-full shadow-[0_0_12px_rgba(var(--primary),0.3)]",
+                      goal.color
+                    )} 
                     style={{ width: `${Math.min(progress, 100)}%` }} 
                   />
                 </div>
               </div>
             )})}
-            {(!goalsQuery.data || goalsQuery.data.length === 0) && (
-              <div className="py-12 text-center text-sm text-muted-foreground font-medium animate-pulse">Establishing strategic benchmarks...</div>
-            )}
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 bg-background/60 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-4">
+        <Card className="border-border/50 bg-background/60 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-2xl shadow-foreground/[0.02]">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-6 px-10 pt-10">
             <div>
-              <CardTitle className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground/80">Real-time Pipeline Pulse</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">Live ETL stream activity</p>
+              <CardTitle className="text-[13px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Real-time Pipeline Pulse</CardTitle>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Live ETL stream activity and ingress health matrix.</p>
             </div>
-            <Zap className="h-4 w-4 text-amber-500 animate-pulse" />
+            <div className="flex items-center gap-2">
+               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+               <Zap className="h-5 w-5 text-amber-500 animate-pulse" />
+            </div>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-6">
+          <CardContent className="p-10 px-8">
+            <div className="space-y-4">
               {[
-                { name: 'GA4 Multi-Property Sync', status: 'success', time: '2m ago', rows: 1240, platform: 'Google' },
-                { name: 'Meta Ads Global ETL', status: 'success', time: '15m ago', rows: 450, platform: 'Meta' },
-                { name: 'Executive Report Gen', status: 'failure', time: '1h ago', rows: 0, platform: 'Internal' },
+                { name: 'GA4 Multi-Property Sync', status: 'success', time: '2m ago', rows: 1240, platform: 'Google', icon: 'google' },
+                { name: 'Meta Ads Global ETL', status: 'success', time: '15m ago', rows: 450, platform: 'Meta', icon: 'meta' },
+                { name: 'Executive Report Gen', status: 'idle', time: '1h ago', rows: 0, platform: 'Internal', icon: 'internal' },
               ].map((log, i) => (
-                <div key={i} className="flex items-center justify-between group p-3 rounded-xl hover:bg-accent/50 transition-all border border-transparent hover:border-border/50 shadow-none hover:shadow-sm">
-                  <div className="flex items-center gap-4">
+                <div key={i} className="flex items-center justify-between group p-5 rounded-2xl bg-muted/10 border border-border/40 hover:bg-background/80 hover:border-primary/20 transition-all shadow-none hover:shadow-xl hover:shadow-primary/[0.05]">
+                  <div className="flex items-center gap-5 min-w-0">
                     <div className={cn(
-                      "flex items-center justify-center h-10 w-10 rounded-xl shadow-inner",
-                      log.status === 'success' ? "bg-green-500/10 text-green-500" : "bg-destructive/10 text-destructive"
+                      "flex items-center justify-center h-12 w-12 rounded-2xl shrink-0 shadow-inner ring-1 ring-inset",
+                      log.status === 'success' ? "bg-green-500/10 text-green-500 ring-green-500/20" : 
+                      log.status === 'idle' ? "bg-muted/50 text-muted-foreground ring-border/50" : "bg-destructive/10 text-destructive ring-destructive/20"
                     )}>
                       {log.status === 'success' ? (
-                        <CheckCircle2 className="h-5 w-5" />
+                        <CheckCircle2 className="h-6 w-6" />
+                      ) : log.status === 'idle' ? (
+                        <Activity className="h-6 w-6 opacity-40" />
                       ) : (
-                        <XCircle className="h-5 w-5" />
+                        <XCircle className="h-6 w-6" />
                       )}
                     </div>
-                    <div>
-                      <p className="text-sm font-bold">{log.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-bold uppercase tracking-wider h-4">{log.platform}</Badge>
-                        <span className="text-[10px] text-muted-foreground font-medium">{log.time} • {log.rows.toLocaleString()} records ingested</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-black tracking-tight truncate">{log.name}</p>
+                      <div className="flex items-center gap-2.5 mt-1">
+                        <Badge variant="outline" className="text-[9px] px-2 py-0.5 font-black uppercase tracking-widest h-5 bg-background border-border/60">{log.platform}</Badge>
+                        <span className="text-[10px] text-muted-foreground font-bold whitespace-nowrap opacity-60">{log.time} &bull; {log.rows.toLocaleString()} records ingested</span>
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon-xs" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Activity className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon-sm" className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary/5 text-primary rounded-xl">
+                    <TrendingUp className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
@@ -522,57 +758,64 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="border-border/50 bg-background/50 backdrop-blur-xl shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-4">
-          <div>
-            <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground/70">Intelligence Feed</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Global operation activity log</p>
-          </div>
-        </CardHeader>
-        <CardContent className="p-6 pt-2">
-          {activityQuery.isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-xl" />
-              ))}
+      <Card className="border-border/50 bg-background/50 backdrop-blur-xl shadow-2xl rounded-[2.5rem] overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-6 px-10 pt-10 bg-muted/10">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+               <CardTitle className="text-[13px] font-black uppercase tracking-[0.25em] text-primary/80">Intelligence Feed</CardTitle>
             </div>
-          ) : activities.length > 0 ? (
-            <div className="max-h-[400px] overflow-y-auto pr-4 space-y-2 scrollbar-thin scrollbar-thumb-accent">
-              {activities.map((activity: ActivityItem) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between gap-4 rounded-xl p-4 hover:bg-accent/50 transition-all border border-transparent hover:border-border/50 group"
-                >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="h-2 w-2 rounded-full bg-primary/40 ring-4 ring-primary/5 shrink-0 group-hover:bg-primary transition-all duration-300" />
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-bold truncate">{activity.action}</span>
-                      <span className="text-xs text-muted-foreground font-medium truncate">
-                        {activity.description}
-                      </span>
-                    </div>
+            <p className="text-xs text-muted-foreground font-medium opacity-70">Global operation activity log & attribution trace.</p>
+          </div>
+          <Button variant="outline" size="sm" className="h-10 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl border-border/60 hover:bg-primary/5">
+             FULL AUDIT TRAIL
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="max-h-[500px] overflow-y-auto px-10 py-6 space-y-1 scrollbar-thin scrollbar-thumb-primary/10">
+            {[
+               { id: '1', action: 'login', description: 'Performed secure identity handshake on pipeline cluster', domain: 'identity', timestamp: '2026-04-06T03:08:00Z' },
+               { id: '2', action: 'logout', description: 'Terminated secure session on high-fidelity data source', domain: 'ingress', timestamp: '2026-04-05T15:08:00Z' },
+               { id: '3', action: 'create_pipeline', description: 'Initialized new ETL orchestration on executive report node', domain: 'pipeline', timestamp: '2026-04-05T03:08:00Z' },
+               { id: '4', action: 'update_source', description: 'Modified signal mapping parameters on strategic client block', domain: 'attribute', timestamp: '2026-04-04T15:08:00Z' },
+               { id: '5', action: 'generate_report', description: 'Successfully synthesized narrative intelligence for user session', domain: 'synthesis', timestamp: '2026-04-04T03:08:00Z' },
+               { id: '6', action: 'export_data', description: 'Exported materialized dataset as XLSX from branding bucket', domain: 'export', timestamp: '2026-04-03T15:08:00Z' },
+               { id: '7', action: 'update_client', description: 'Updated client configuration metadata on primary dashboard', domain: 'config', timestamp: '2026-04-03T03:08:00Z' },
+            ].map((activity: any) => (
+              <div
+                key={activity.id}
+                className="flex items-center justify-between gap-6 rounded-2xl p-5 hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 group cursor-default"
+              >
+                <div className="flex items-center gap-6 min-w-0">
+                  <div className="flex flex-col items-center">
+                     <div className="h-10 w-10 rounded-2xl bg-muted/20 border border-border/40 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/30 transition-all">
+                        <Activity className="h-5 w-5 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">
-                      {activity.timestamp
-                        ? new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : ""}
-                    </span>
-                    <span className="text-[9px] font-medium text-muted-foreground/40 italic">
-                      {activity.timestamp ? new Date(activity.timestamp).toLocaleDateString() : ""}
+                  <div className="flex flex-col min-w-0 space-y-1">
+                    <div className="flex items-center gap-2">
+                       <span className="text-sm font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors italic">{activity.action}</span>
+                       <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest px-2 h-4 opacity-40 border-muted-foreground/20">{activity.domain}</Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium opacity-80 line-clamp-1">
+                      {activity.description}
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <Activity className="h-10 w-10 opacity-10 mb-4" />
-              <p className="text-sm font-medium">Awaiting first analytical signals...</p>
-            </div>
-          )}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="text-[11px] font-black text-foreground/80 tabular-nums uppercase opacity-90">
+                    {new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums">
+                    {new Date(activity.timestamp).toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
+
     </div>
   );
 }

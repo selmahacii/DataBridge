@@ -41,6 +41,7 @@ model SmeClient {
   reports   Report[]
   goals     Goal[]
   alerts    AnomalyAlert[]
+  dispatches ScheduledDispatch[]
 }
 
 model User {
@@ -111,16 +112,18 @@ model PipelineStep {
 }
 
 model DataPoint {
-  id           String   @id @default(cuid())
-  sourceId     String
-  metric       String   // sessions, pageviews, users, conversions, revenue, impressions, clicks, ctr, bounceRate, avgSessionDuration, costPerClick, spend, conversionsCost
-  value        Float
-  date         DateTime
-  device       String   @default("all") // desktop, mobile, tablet, all
-  country      String   @default("")
-  campaign     String   @default("")
-  createdAt    DateTime @default(now())
-  source       DataSource @relation(fields: [sourceId], references: [id])
+  id             String   @id @default(cuid())
+  sourceId       String
+  metric         String   // sessions, pageviews, users, conversions, revenue, impressions, clicks, ctr, bounceRate, avgSessionDuration, costPerClick, spend, conversionsCost
+  value          Float
+  date           DateTime
+  device         String   @default("all") // desktop, mobile, tablet, all
+  country        String   @default("")
+  campaign       String   @default("")
+  idempotencyKey String?  @unique
+  anomalyScore   Float?   @default(0.0)
+  createdAt      DateTime @default(now())
+  source         DataSource @relation(fields: [sourceId], references: [id])
 }
 
 model Report {
@@ -207,14 +210,19 @@ model Widget {
 }
 
 model ProcessedData {
-  id          String   @id @default(cuid())
-  pipelineId  String
-  orgId       String
-  rowDate     DateTime
-  rowCategory String?
-  rowMetric   String?
-  rowValue    Float
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  pipelineId      String
+  orgId           String
+  rowDate         DateTime
+  rowCategory     String?
+  rowMetric       String?
+  rowValue        Float
+  idempotencyKey  String   @unique
+  confidenceScore Float?   @default(1.0)
+  anomalyScore    Float?   @default(0.0)
+  impactScore     Float?   @default(0.0)
+  explainability  String?  @default("{}")
+  createdAt       DateTime @default(now())
 }
 
 model AgencyTemplate {
@@ -315,4 +323,17 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+model ScheduledDispatch {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  clientId    String
+  cron        String
+  active      Boolean  @default(true)
+  targets     String   // JSON array of strings: ["SLACK", "EMAIL", "WEBHOOK"]
+  icon        String   @default("Server")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  client      SmeClient @relation(fields: [clientId], references: [id])
 }

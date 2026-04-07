@@ -10,11 +10,13 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/databridge?schema=public
       - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:9092
       - NEXTAUTH_URL=http://localhost:3000
       - NEXTAUTH_SECRET=fallback_secret_for_local_dev
     depends_on:
       - postgres
       - redis
+      - kafka
     restart: unless-stopped
 
   postgres:
@@ -39,6 +41,46 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: databridge-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: databridge-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: databridge-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
 volumes:
   postgres_data:
   redis_data:
+  clickhouse_data:

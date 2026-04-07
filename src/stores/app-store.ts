@@ -5,12 +5,17 @@ export type Page =
   | "clients"
   | "sources"
   | "pipelines"
+  | "pipeline-status"
+  | "data-quality"
+  | "feature-store"
+  | "inference-results"
   | "reports"
   | "templates"
   | "users"
   | "agencies"
   | "branding"
-  | "ai-chat";
+  | "ai-chat"
+  | "audit-trail";
 
 interface AppState {
   currentPage: Page;

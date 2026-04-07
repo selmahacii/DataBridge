@@ -14,6 +14,14 @@ import {
   MessageSquare,
   Moon,
   Sun,
+  Activity,
+  ShieldCheck,
+  BrainCircuit,
+  LineChart,
+  History,
+  Server,
+  Package,
+  Fingerprint,
 } from "lucide-react";
 import { useAppStore, type Page } from "@/stores/app-store";
 import { Logo } from "@/components/logo";
@@ -42,19 +50,23 @@ interface NavItem {
   icon: React.ElementType;
 }
 
-const operationalNav: NavItem[] = [
+const intelligenceNav: NavItem[] = [
   { label: "Performance Overview", page: "dashboard", icon: LayoutDashboard },
   { label: "Strategic Clients", page: "clients", icon: Users },
   { label: "Automated Reports", page: "reports", icon: FileBarChart },
+  { label: "AI Feature Store", page: "feature-store", icon: Package },
+  { label: "Inference Results", page: "inference-results", icon: BrainCircuit },
 ];
 
-const dataNav: NavItem[] = [
+const operationsNav: NavItem[] = [
   { label: "Integration Hub", page: "sources", icon: Database },
   { label: "ETL Pipelines", page: "pipelines", icon: GitBranch },
+  { label: "Pipeline Status", page: "pipeline-status", icon: Activity },
+  { label: "Data Quality Center", page: "data-quality", icon: ShieldCheck },
   { label: "Intelligence Sync", page: "ai-chat", icon: MessageSquare },
 ];
 
-const systemNav: NavItem[] = [
+const administrationNav: NavItem[] = [
   { label: "Report Blueprints", page: "templates", icon: LayoutTemplate },
   { label: "Agency Branding", page: "branding", icon: Palette },
   { label: "Access Control", page: "users", icon: UserCog },
@@ -87,10 +99,10 @@ export function AppSidebar() {
       
       <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Intelligence</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Intelligence & ML</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {operationalNav.map((item) => (
+              {intelligenceNav.map((item) => (
                 <SidebarMenuItem key={item.page}>
                   <SidebarMenuButton
                     isActive={currentPage === item.page}
@@ -114,7 +126,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Operations</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {dataNav.map((item) => (
+              {operationsNav.map((item) => (
                 <SidebarMenuItem key={item.page}>
                   <SidebarMenuButton
                     isActive={currentPage === item.page}
@@ -138,7 +150,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="px-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">Administration</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {systemNav.map((item) => (
+              {administrationNav.map((item) => (
                 <SidebarMenuItem key={item.page}>
                   <SidebarMenuButton
                     isActive={currentPage === item.page}
@@ -162,13 +174,19 @@ export function AppSidebar() {
       <SidebarFooter className="p-4">
         <SidebarSeparator className="mb-4 opacity-50" />
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3 px-1 group-data-[collapsible=icon]:justify-center">
-            <Avatar className="h-8 w-8 border border-border/50 shadow-sm">
-              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">AD</AvatarFallback>
+          <div 
+            className="flex items-center gap-3 px-1 group-data-[collapsible=icon]:justify-center cursor-pointer hover:bg-muted/30 rounded-lg p-1 transition-colors"
+            onClick={() => setCurrentPage("audit-trail")}
+          >
+            <Avatar className="h-8 w-8 border border-border/50 shadow-sm ring-1 ring-primary/10">
+              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">SH</AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
               <span className="text-xs font-bold truncate">Selma Haci</span>
-              <span className="text-[10px] text-muted-foreground truncate font-medium">Agency Administrator</span>
+              <div className="flex items-center gap-1">
+                <Fingerprint className="h-2.5 w-2.5 text-primary" />
+                <span className="text-[10px] text-muted-foreground truncate font-medium">Audit Trail Available</span>
+              </div>
             </div>
           </div>
           

@@ -447,3 +447,68 @@ Increase `--maxmemory` in `docker-compose.yml` or switch eviction policy to `vol
 ## License
 
 Proprietary — all rights reserved.
+
+
+
+
+
+ajoute dans la dashboard Pipeline Health Score avec sous-détails : Circuit Breaker status, DLQ size, Kafka lag.ur chaque carte KPI : ajoute un petit badge "Data Freshness : il y a 2 min"Dans le grand graphique TRAFFIC VELOCITY : ajoute un toggle en haut à droite "Real-time / Historical" (Real-time = flux direct de Kafka normalized_events, Historical = ClickHouse materialized views).
+Ajoute une nouvelle carte à droite : Data Quality Score (pourcentage global + breakdown GA4 / Meta / Google Ads). ouvelle section dans la Sidebar (sous OPERATIONS)
+Ajoute ces deux entrées :
+
+Pipeline Status
+Data Quality Center
+
+Détails à ajouter dans Pipeline Status (nouvelle page)
+
+En haut : 4-6 cartes live
+Throughput (events/min)
+End-to-End Latency
+Error Rate & DLQ volume
+Circuit Breaker (état + nombre d’ouvertures)
+Kafka Topics lag (raw_events vs normalized_events)
+
+Au centre : Flow Visualization (diagramme horizontal ou vertical simplifié) montrant :
+Ingestion Workers (Go) → Kafka raw_events → Flink DQ Validator → Kafka normalized_events → ClickHouse → Feature Store → ML Inference
+Chaque nœud avec pastille de couleur (vert = healthy, orange = degraded, rouge = error) + clic pour détails/logs.
+En bas : tableau des Active Jobs (Temporal Orchestrator) avec colonnes : Job Name, Trigger, Status, Dernière exécution, Retry count.
+
+Détails à ajouter dans Data Quality Center (nouvelle page)
+
+Score global de qualité + évolution sur 7 jours (graphique).
+Tableau des règles de validation Flink (nom de règle, % validé, source concernée, statut).
+Section Rejected Events : liste paginée des événements en DLQ (Validation DLQ) avec raison du rejet + bouton "Replay" (un ou plusieurs).
+Onglet Schema Registry : liste des versions Avro avec date et évolution.
+Graphique comparatif : raw vs normalized par source.
+
+Améliorations dans Integration Hub
+
+Dans le tableau des Connected Sources : ajoute colonnes
+Last Sync (avec freshness badge)
+Volume ingéré ce jour
+Status live (Active + petit indicateur de latence)
+Bouton "Force Sync" qui trigger le Temporal job.
+
+
+Améliorations dans Intelligence & ML (ajoute cette section sous INTELLIGENCE)
+
+Feature Store : tableau des features (nom, type, dernière mise à jour, cardinalité).
+Inference Results : graphiques Prophet (actual vs forecast + bande de confiance) + SHAP summary plot (feature importance).
+Bouton global "Run Full Inference" (sur tout ou par client).
+
+Améliorations transversales (à appliquer partout)
+
+En haut à droite (près du search) : Client Selector (dropdown ou chips) pour filtrer tout par client/agence.
+Sur tous les graphiques : bouton Export (XLSX + PDF + Raw JSON).
+Ajoute des tooltips riches au hover : exemple sur un KPI → "Données provenant de ClickHouse materialized view – dernière mise à jour via Flink sink".
+Dans les rapports (Automated Reports) : preview live du rendu + indication "Generated from normalized_events + ML inference".
+Partout où il y a des stats : petit indicateur "Sourced from" (Kafka / ClickHouse / Redis cache).
+
+Petits détails premium à ajouter rapidement
+
+Auto-refresh toutes les 30 secondes sur les pages Pipeline Status et Data Quality (avec option pause).
+Pastilles de statut (vert/orange/rouge) partout où il y a un composant backend (sources, pipelines, jobs).
+Dans le menu utilisateur (Selma Haci) : lien direct vers Audit Trail (historique complet des flux + lineage).
+Sur la page Clients : colonne "Pipeline Health" par client.
+
+Ces ajouts rendent l’interface cohérente avec tout le backend (Kafka, Flink, ClickH

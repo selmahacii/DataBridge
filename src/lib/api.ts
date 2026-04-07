@@ -54,6 +54,11 @@ export const api = {
     request<any[]>(`/reports${clientId ? `?clientId=${clientId}` : ""}`),
   createReport: (data: Record<string, unknown>) => request("/reports", { method: "POST", body: JSON.stringify(data) }),
   deleteReport: (id: string) => request(`/reports/${id}`, { method: "DELETE" }),
+  getDispatches: (clientId?: string | null) => 
+    request<any[]>(`/reports/dispatches${clientId ? `?clientId=${clientId}` : ""}`),
+  createDispatch: (data: Record<string, unknown>) => request("/reports/dispatches", { method: "POST", body: JSON.stringify(data) }),
+  updateDispatch: (id: string, data: Record<string, unknown>) => request(`/reports/dispatches/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteDispatch: (id: string) => request(`/reports/dispatches/${id}`, { method: "DELETE" }),
 
   // Templates
   getTemplates: () => request("/templates"),

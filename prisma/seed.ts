@@ -5,16 +5,16 @@ const db = new PrismaClient();
 // ── Reference Data ──────────────────────────────────────────────────────────
 
 const AGENCIES = [
-  { name: "Nexus Digital Group", slug: "nexus-digital", email: "contact@nexusdigital.com", phone: "+1 (555) 100-2000", address: "350 5th Avenue, New York, NY 10118", plan: "enterprise", maxClients: 50 },
+  { name: "Nexus Digital Group", slug: "nexus-digital", email: "contact@nexusdigital.com", phone: "+213780125700", address: "Algiers,Algeria", plan: "enterprise", maxClients: 50 },
   { name: "Peak Performance Media", slug: "peak-performance", email: "info@peakmedia.com", phone: "+44 20 7946 0958", address: "71 Queen Victoria St, London EC4V 4AY", plan: "professional", maxClients: 20 },
 ];
 
 const CLIENTS = [
-  { name: "TechVision Solutions", slug: "techvision", industry: "Technology", website: "techvision.io", email: "ops@techvision.io", phone: "+1 (555) 201-3000", status: "active" },
-  { name: "GreenLeaf Organics", slug: "greenleaf", industry: "Food & Beverage", website: "greenleaf.com", email: "analytics@greenleaf.com", phone: "+1 (555) 301-4000", status: "active" },
-  { name: "UrbanFit Apparel", slug: "urbanfit", industry: "Retail / Fashion", website: "urbanfit.co", email: "marketing@urbanfit.co", phone: "+1 (555) 401-5000", status: "active" },
-  { name: "CloudSync SaaS", slug: "cloudsync", industry: "SaaS / Software", website: "cloudsync.io", email: "data@cloudsync.io", phone: "+1 (555) 501-6000", status: "active" },
-  { name: "MediCare Plus", slug: "medicareplus", industry: "Healthcare", website: "medicareplus.com", email: "ops@medicareplus.com", phone: "+1 (555) 601-7000", status: "active" },
+  { name: "TechVision Solutions", slug: "techvision", industry: "Technology", website: "techvision.io", email: "ops@techvision.io", phone: "+121 (555) 201-3000", status: "active" },
+  { name: "GreenLeaf Organics", slug: "greenleaf", industry: "Food & Beverage", website: "greenleaf.com", email: "analytics@greenleaf.com", phone: "+11 (555) 301-4000", status: "active" },
+  { name: "UrbanFit Apparel", slug: "urbanfit", industry: "Retail / Fashion", website: "urbanfit.co", email: "marketing@urbanfit.co", phone: "+212 (555) 401-5000", status: "active" },
+  { name: "CloudSync SaaS", slug: "cloudsync", industry: "SaaS / Software", website: "cloudsync.io", email: "data@cloudsync.io", phone: "+21 (555) 501-6000", status: "active" },
+  { name: "MediCare Plus", slug: "medicareplus", industry: "Healthcare", website: "medicareplus.com", email: "ops@medicareplus.com", phone: "+12 (555) 601-7000", status: "active" },
   { name: "FinanceHub Capital", slug: "financehub", industry: "Financial Services", website: "financehub.com", email: "reports@financehub.com", phone: "+1 (555) 701-8000", status: "active" },
   { name: "TravelWise Adventures", slug: "travelwise", industry: "Travel & Hospitality", website: "travelwise.com", email: "digital@travelwise.com", phone: "+1 (555) 801-9000", status: "active" },
   { name: "EduLearn Academy", slug: "edulearn", industry: "Education", website: "edulearn.org", email: "tech@edulearn.org", phone: "+1 (555) 901-0001", status: "inactive" },

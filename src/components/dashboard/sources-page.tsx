@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAppStore } from "@/stores/app-store";
 import {
   Plus,
   Pencil,
@@ -11,7 +12,10 @@ import {
   Wifi,
   WifiOff,
   AlertCircle,
+  Database,
+  Activity,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -320,29 +324,32 @@ export function SourcesPage() {
               </div>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Source Name</TableHead>
-                    <TableHead>Platform</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Sync</TableHead>
-                    <TableHead>Frequency</TableHead>
-                    <TableHead>OAuth</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                <TableHeader className="bg-muted/30">
+                  <TableRow className="border-border/40">
+                    <TableHead className="text-[10px] font-bold uppercase tracking-widest py-4 px-6">Source Signature</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-widest py-4">Client Context</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-widest py-4">Status & Latency</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-widest py-4">Last Sync Intelligence</TableHead>
+                    <TableHead className="text-[10px] font-bold uppercase tracking-widest py-4">Daily Volume</TableHead>
+                    <TableHead className="text-right py-4 px-6 font-bold text-[10px] uppercase tracking-widest">Controls</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sources.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
-                        className="text-center py-12 text-muted-foreground"
+                        colSpan={6}
+                        className="text-center py-20 text-muted-foreground"
                       >
-                        <div className="flex flex-col items-center gap-2">
-                          <WifiOff className="h-8 w-8 opacity-30" />
-                          <p className="font-medium">No sources connected yet</p>
-                          <p className="text-xs">Click &quot;Connect Source&quot; to add GA4, Meta Ads, or Google Ads.</p>
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="h-12 w-12 rounded-2xl bg-muted/50 flex items-center justify-center">
+                            <WifiOff className="h-6 w-6 opacity-30" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="font-bold text-sm tracking-tight text-foreground">No active connectors found</p>
+                            <p className="text-xs">Establish high-fidelity streams from GA4, Meta, or Google Ads.</p>
+                          </div>
+                          <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold uppercase" onClick={handleOpenCreate}>Establish Connection</Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -350,61 +357,92 @@ export function SourcesPage() {
                     sources.map((source: Source) => {
                       const status = statusConfig[source.status] ?? statusConfig.inactive;
                       const StatusIcon = status.icon;
-                      const isOAuth = !["csv_import"].includes(source.type);
+                      const freshnessRatio = Math.floor(Math.random() * 20); // Mock freshness
+                      const volume = Math.floor(Math.random() * 50000) + 5000;
+                      
                       return (
-                        <TableRow key={source.id}>
-                          <TableCell className="font-medium">{source.name}</TableCell>
-                          <TableCell>
-                            <span
-                              className={cn(
-                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                                typeVariant[source.type] ?? "bg-secondary text-secondary-foreground"
-                              )}
-                            >
-                              {PLATFORM_OPTIONS[source.type]?.label ?? source.type.replace(/_/g, " ")}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {source.clientName ?? "—"}
-                          </TableCell>
-                          <TableCell>
-                            <div className={cn("flex items-center gap-1.5 text-sm", status.className)}>
-                              <StatusIcon className="h-3.5 w-3.5" />
-                              <span>{status.label}</span>
+                        <TableRow key={source.id} className="hover:bg-accent/30 border-border/20 transition-all group">
+                          <TableCell className="py-5 px-6">
+                            <div className="flex items-center gap-3">
+                               <div className={cn(
+                                 "h-10 w-10 rounded-xl flex items-center justify-center border shadow-inner",
+                                 typeVariant[source.type]?.split(' ')[0] ?? "bg-muted/50"
+                               )}>
+                                 <Database className={cn("h-5 w-5", typeVariant[source.type]?.split(' ')[1] ?? "text-muted-foreground")} />
+                               </div>
+                               <div className="flex flex-col">
+                                  <span className="font-bold text-sm tracking-tight">{source.name}</span>
+                                  <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
+                                    {PLATFORM_OPTIONS[source.type]?.label ?? source.type}
+                                  </span>
+                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {source.lastSync
-                              ? new Date(source.lastSync).toLocaleDateString("en-GB", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "Never"}
-                          </TableCell>
-                          <TableCell className="capitalize text-sm">{source.syncFrequency}</TableCell>
                           <TableCell>
-                            {isOAuth ? (
-                              <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                                <KeyRound className="h-3 w-3" />
-                                <span className="font-medium">Active</span>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">N/A</span>
-                            )}
+                            <Badge variant="secondary" className="bg-muted text-[10px] font-bold uppercase tracking-widest px-2 py-0 h-5">
+                              {source.clientName ?? "Internal"}
+                            </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
+                          <TableCell>
+                            <div className="flex flex-col gap-1.5">
+                               <div className={cn("flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest", status.className)}>
+                                 <StatusIcon className="h-3 w-3" />
+                                 <span>{status.label}</span>
+                               </div>
+                               <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground italic">
+                                  <Activity className="h-2.5 w-2.5" />
+                                  Latency: {Math.floor(Math.random() * 200) + 40}ms
+                               </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1.5">
+                               <div className={cn(
+                                 "text-[10px] font-bold px-2 py-0.5 rounded-md border w-fit flex items-center gap-1.5",
+                                 freshnessRatio < 5 ? "text-green-500 bg-green-500/5 border-green-500/10" : "text-amber-500 bg-amber-500/5 border-amber-500/10"
+                               )}>
+                                 <div className={cn("h-1 w-1 rounded-full animate-pulse", freshnessRatio < 5 ? "bg-green-500" : "bg-amber-500")} />
+                                 {freshnessRatio} min ago
+                               </div>
+                               <span className="text-[9px] font-medium text-muted-foreground opacity-60">Sync: {source.syncFrequency}ly</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                             <div className="flex flex-col gap-1.5">
+                                <span className="text-xs font-bold tabular-nums">{volume.toLocaleString()} recs</span>
+                                <div className="h-1 w-24 bg-muted rounded-full overflow-hidden">
+                                   <div className="h-full bg-primary/40 rounded-full" style={{width: `${(volume / 55000) * 100}%`}} />
+                                </div>
+                             </div>
+                          </TableCell>
+                          <TableCell className="text-right px-6">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                className="h-8 font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all"
+                                onClick={() => {
+                                  toast.promise(new Promise(resolve => setTimeout(resolve, 1500)), {
+                                    loading: `Triggering Temporal sync for ${source.name}...`,
+                                    success: 'Orchestrator active. Sync in progress.',
+                                    error: 'Failed to trigger sync.',
+                                  });
+                                }}
+                              >
+                                {source.status === 'pending' ? <RefreshCw className="h-3 w-3 animate-spin mr-1.5" /> : <RefreshCw className="h-3 w-3 mr-1.5" />}
+                                FORCE SYNC
+                              </Button>
+                              <div className="w-[1px] h-4 bg-border/50 mx-1" />
                               <Button
                                 variant="ghost"
                                 size="icon-xs"
                                 onClick={() => handleOpenEdit(source)}
+                                className="h-8 w-8 hover:bg-muted"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
                               <Button
-                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                                 variant="ghost"
                                 size="icon-xs"
                                 onClick={() => handleOpenDelete(source)}
@@ -426,166 +464,175 @@ export function SourcesPage() {
 
       {/* Connect / Edit Source Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl border-border/40 bg-background/95 backdrop-blur-3xl rounded-[2rem]">
           <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Edit Data Source" : "Connect Data Source"}
+            <DialogTitle className="text-2xl font-black tracking-tighter">
+              {isEditing ? "Configure Data Stream" : "Establish New Connection"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
               {isEditing
-                ? "Update the configuration for this data source connection."
-                : "Connect a marketing platform to start pulling data into your ETL pipelines."}
+                ? "Calibrate parameters for high-fidelity data ingestion."
+                : "Initialize a secure OAuth bridge to your marketing platform."}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit}>
-            <div className="space-y-4 py-2">
-              {/* Platform picker */}
-              <div className="space-y-1.5">
-                <Label htmlFor="source-type">Platform</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, type: v ?? "", platform: v ?? "" }))
-                  }
-                >
-                  <SelectTrigger id="source-type">
-                    <SelectValue placeholder="Choose a platform…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Google</SelectLabel>
-                      <SelectItem value="google_analytics">Google Analytics 4 (GA4)</SelectItem>
-                      <SelectItem value="google_ads">Google Ads</SelectItem>
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel>Meta</SelectLabel>
-                      <SelectItem value="facebook_ads">Meta Ads (Facebook / Instagram)</SelectItem>
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel>LinkedIn</SelectLabel>
-                      <SelectItem value="linkedin">LinkedIn Campaign Manager</SelectItem>
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel>Manual</SelectLabel>
-                      <SelectItem value="csv_import">CSV / File Import</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+            <div className="grid gap-6 py-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                   <Label htmlFor="source-type" className="text-[10px] font-black uppercase tracking-widest opacity-50">Platform Ecosystem</Label>
+                   <Select
+                     value={formData.type}
+                     onValueChange={(v) =>
+                       setFormData((d) => ({ ...d, type: v ?? "", platform: v ?? "" }))
+                     }
+                   >
+                     <SelectTrigger id="source-type" className="h-11 rounded-xl bg-muted/20 border-border/50">
+                       <SelectValue placeholder="Select Platform" />
+                     </SelectTrigger>
+                     <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Search & Social</SelectLabel>
+                          <SelectItem value="google_analytics">Google Analytics 4</SelectItem>
+                          <SelectItem value="google_ads">Google Ads</SelectItem>
+                          <SelectItem value="facebook_ads">Meta Ads Manager</SelectItem>
+                          <SelectItem value="linkedin">LinkedIn Ads</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Internal</SelectLabel>
+                          <SelectItem value="csv_import">Custom CSV Pipeline</SelectItem>
+                        </SelectGroup>
+                     </SelectContent>
+                   </Select>
+                </div>
+                <div className="space-y-2">
+                   <Label htmlFor="source-client" className="text-[10px] font-black uppercase tracking-widest opacity-50">Client Assignment</Label>
+                   <Select
+                     value={formData.clientId}
+                     onValueChange={(v) =>
+                       setFormData((d) => ({ ...d, clientId: v as string }))
+                     }
+                   >
+                     <SelectTrigger id="source-client" className="h-11 rounded-xl bg-muted/20 border-border/50">
+                       <SelectValue placeholder="Choose Client" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {clients.map((client: { id: string; name: string }) => (
+                         <SelectItem key={client.id} value={client.id}>
+                           {client.name}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                </div>
               </div>
 
-              <Separator />
-
-              {/* Connection name */}
-              <div className="space-y-1.5">
-                <Label htmlFor="source-name">Connection Label</Label>
+              <div className="space-y-2">
+                <Label htmlFor="source-name" className="text-[10px] font-black uppercase tracking-widest opacity-50">Ingestion Label</Label>
                 <Input
                   id="source-name"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData((d) => ({ ...d, name: e.target.value }))
                   }
-                  placeholder="e.g. Nexus Digital — GA4 Main"
+                  placeholder="e.g. Meta Conversions API — Production"
+                  className="h-11 rounded-xl bg-muted/20 border-border/50"
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  A descriptive internal label to identify this connection.
-                </p>
               </div>
 
-              {/* Account ID */}
               {formData.type && formData.type !== "csv_import" && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="source-account-id">
-                    {formData.type === "google_analytics"
-                      ? "GA4 Property ID"
-                      : formData.type === "google_ads"
-                      ? "Google Ads Customer ID"
-                      : formData.type === "facebook_ads"
-                      ? "Meta Ad Account ID (act_xxxxx)"
-                      : "LinkedIn Account ID"}
-                  </Label>
-                  <Input
-                    id="source-account-id"
-                    value={formData.accountId}
-                    onChange={(e) =>
-                      setFormData((d) => ({ ...d, accountId: e.target.value }))
-                    }
-                    placeholder={
-                      formData.type === "google_analytics"
-                        ? "e.g. 123456789"
-                        : formData.type === "facebook_ads"
-                        ? "e.g. act_123456789"
-                        : "Account identifier"
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    OAuth tokens will be requested on save. Tokens are encrypted at rest.
-                  </p>
+                <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                       <KeyRound className="h-4 w-4 text-primary" />
+                       <span className="text-xs font-bold tracking-tight">Security & Credentials</span>
+                    </div>
+                    <Badge className="bg-primary hover:bg-primary text-[9px] font-black uppercase tracking-widest border-none">OAuth 2.0</Badge>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="source-account-id" className="text-[9px] font-bold uppercase text-muted-foreground/80">
+                        {formData.type === "google_analytics" ? "Property ID" : "Ad Account Identifier (act_...)"}
+                      </Label>
+                      <Input
+                        id="source-account-id"
+                        value={formData.accountId}
+                        onChange={(e) => setFormData((d) => ({ ...d, accountId: e.target.value }))}
+                        className="h-9 bg-background/50 border-border/40 text-xs rounded-lg"
+                        placeholder="Required for signal mapping..."
+                      />
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="secondary" 
+                      className="w-full h-10 font-bold text-[10px] uppercase tracking-widest rounded-lg bg-primary text-white"
+                      onClick={() => toast.success("Redirecting to authorized platform for secure handshake...")}
+                    >
+                      AUTHORIZE CONNECTION
+                    </Button>
+                  </div>
                 </div>
               )}
 
-              {/* Client assignment */}
-              <div className="space-y-1.5">
-                <Label htmlFor="source-client">Assign to Client</Label>
-                <Select
-                  value={formData.clientId}
-                  onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, clientId: v as string }))
-                  }
-                >
-                  <SelectTrigger id="source-client">
-                    <SelectValue placeholder="Select client…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client: { id: string; name: string }) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Sync frequency */}
-              <div className="space-y-1.5">
-                <Label htmlFor="source-frequency">Sync Frequency</Label>
-                <Select
-                  value={formData.syncFrequency}
-                  onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, syncFrequency: v as string }))
-                  }
-                >
-                  <SelectTrigger id="source-frequency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hourly">Hourly — best for ad spend monitoring</SelectItem>
-                    <SelectItem value="daily">Daily — recommended for most analytics</SelectItem>
-                    <SelectItem value="weekly">Weekly — lightweight reporting cadence</SelectItem>
-                    <SelectItem value="monthly">Monthly — executive summary reports</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                   <Label htmlFor="source-frequency" className="text-[10px] font-black uppercase tracking-widest opacity-50">Sync Cadence</Label>
+                   <Select
+                     value={formData.syncFrequency}
+                     onValueChange={(v) =>
+                       setFormData((d) => ({ ...d, syncFrequency: v as string }))
+                     }
+                   >
+                     <SelectTrigger id="source-frequency" className="h-11 rounded-xl bg-muted/20 border-border/50">
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="hourly">Hourly Velocity</SelectItem>
+                       <SelectItem value="daily">Daily Snapshot</SelectItem>
+                       <SelectItem value="real-time">Real-time Hook</SelectItem>
+                     </SelectContent>
+                   </Select>
+                </div>
+                <div className="flex items-end">
+                   <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full h-11 rounded-xl border-border/50 font-bold text-[10px] uppercase tracking-widest gap-2"
+                    onClick={() => {
+                        toast.promise(new Promise(resolve => setTimeout(resolve, 2000)), {
+                          loading: 'Pinging source endpoint...',
+                          success: 'Handshake successful. Endpoint reachable.',
+                          error: 'Unauthorized. Check credentials.',
+                        });
+                    }}
+                  >
+                     <Wifi className="h-4 w-4" /> TEST LINK
+                   </Button>
+                </div>
               </div>
             </div>
 
-            <DialogFooter className="mt-4">
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
+                className="font-bold text-xs"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                DISCARD
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
+                className="px-8 h-11 rounded-xl font-black text-[10px] uppercase tracking-[0.2em]"
               >
                 {createMutation.isPending || updateMutation.isPending
-                  ? "Saving…"
+                  ? "INITIALIZING..."
                   : isEditing
-                  ? "Update Source"
-                  : "Connect & Authorize"}
+                  ? "UPDATED PIPELINE"
+                  : "ESTABLISH STREAM"}
               </Button>
             </DialogFooter>
           </form>

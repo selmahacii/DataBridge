@@ -1,12 +1,17 @@
 "use client";
 
-import { useAppStore } from "@/stores/app-store";
+import { useAppStore, type Page } from "@/stores/app-store";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { ClientsPage } from "@/components/dashboard/clients-page";
 import { SourcesPage } from "@/components/dashboard/sources-page";
 import { PipelinesPage } from "@/components/dashboard/pipelines-page";
+import { PipelineStatusPage } from "@/components/dashboard/pipeline-status-page";
+import { DataQualityPage } from "@/components/dashboard/data-quality-page";
+import { FeatureStorePage } from "@/components/dashboard/feature-store-page";
+import { InferenceResultsPage } from "@/components/dashboard/inference-results-page";
+import { AuditTrailPage } from "@/components/dashboard/audit-trail-page";
 import { ReportsPage } from "@/components/dashboard/reports-page";
 import { TemplatesPage } from "@/components/dashboard/templates-page";
 import { UsersPage } from "@/components/dashboard/users-page";
@@ -35,11 +40,16 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-const pageMap: Record<string, React.ComponentType> = {
+const pageMap: Record<Page, React.ComponentType | any> = {
   dashboard: DashboardPage,
   clients: ClientsPage,
   sources: SourcesPage,
   pipelines: PipelinesPage,
+  "pipeline-status": PipelineStatusPage,
+  "data-quality": DataQualityPage,
+  "feature-store": FeatureStorePage,
+  "inference-results": InferenceResultsPage,
+  "audit-trail": AuditTrailPage,
   reports: ReportsPage,
   templates: TemplatesPage,
   users: UsersPage,

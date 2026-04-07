@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -281,97 +282,146 @@ export function PipelinesPage() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl border-border/40 bg-background/95 backdrop-blur-3xl rounded-[2rem]">
           <DialogHeader>
-            <DialogTitle>
-              {selected ? "Edit Pipeline" : "Create Pipeline"}
+            <DialogTitle className="text-2xl font-black tracking-tighter">
+              {selected ? "Configure ETL Pipeline" : "Architect New Pipeline"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
               {selected
-                ? "Update the pipeline configuration."
-                : "Set up a new data processing pipeline."}
+                ? "Calibrate worker nodes and data flow parameters."
+                : "Design a high-performance orchestration workflow."}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="pipeline-name">Pipeline Name</Label>
-                <Input
-                  id="pipeline-name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((d) => ({ ...d, name: e.target.value }))
-                  }
-                  required
-                />
+            <div className="grid gap-6 py-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pipeline-name" className="text-[10px] font-black uppercase tracking-widest opacity-50">Pipeline Signature</Label>
+                    <Input
+                      id="pipeline-name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData((d) => ({ ...d, name: e.target.value }))
+                      }
+                      placeholder="e.g. GA4 to ClickHouse Production"
+                      className="h-11 rounded-xl bg-muted/20 border-border/50"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="pipeline-desc" className="text-[10px] font-black uppercase tracking-widest opacity-50">Operational Intent</Label>
+                    <Textarea
+                      id="pipeline-desc"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData((d) => ({ ...d, description: e.target.value }))
+                      }
+                      placeholder="Describe the data transformation logic..."
+                      className="h-24 rounded-xl bg-muted/20 border-border/50 resize-none"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pipeline-client" className="text-[10px] font-black uppercase tracking-widest opacity-50">Client Context</Label>
+                    <Select
+                      value={formData.clientId}
+                      onValueChange={(v) =>
+                        setFormData((d) => ({ ...d, clientId: v as string }))
+                      }
+                    >
+                      <SelectTrigger className="h-11 rounded-xl bg-muted/20 border-border/50">
+                        <SelectValue placeholder="Global Context" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map(
+                          (client: { id: string; name: string }) => (
+                            <SelectItem key={client.id} value={client.id}>
+                              {client.name}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="pipeline-freq" className="text-[10px] font-black uppercase tracking-widest opacity-50">Execution Cadence</Label>
+                    <Select
+                      value={formData.frequency}
+                      onValueChange={(v) =>
+                        setFormData((d) => ({ ...d, frequency: v as string }))
+                      }
+                    >
+                      <SelectTrigger className="h-11 rounded-xl bg-muted/20 border-border/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hourly">Hourly (Incremental)</SelectItem>
+                        <SelectItem value="daily">Daily (Full Batch)</SelectItem>
+                        <SelectItem value="real-time">Real-time Stream</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="pipeline-desc">Description</Label>
-                <Textarea
-                  id="pipeline-desc"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((d) => ({ ...d, description: e.target.value }))
-                  }
-                  rows={3}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="pipeline-client">Client</Label>
-                <Select
-                  value={formData.clientId}
-                  onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, clientId: v as string }))
-                  }
+
+              <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-4">
+                <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-2">
+                      <ServerCog className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-bold tracking-tight">Step Logic & Orchestration</span>
+                   </div>
+                   <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest">Multi-stage</Badge>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                   <div className="p-3 rounded-xl bg-background/50 border border-border/40 flex flex-col gap-1">
+                      <span className="text-[9px] font-black text-muted-foreground/60 uppercase">SOURCE</span>
+                      <span className="text-[11px] font-bold">Raw Ingress</span>
+                   </div>
+                   <div className="p-3 rounded-xl bg-background/50 border border-border/40 flex flex-col gap-1">
+                      <span className="text-[9px] font-black text-muted-foreground/60 uppercase">TRANSFORM</span>
+                      <span className="text-[11px] font-bold">Flink SQL</span>
+                   </div>
+                   <div className="p-3 rounded-xl bg-background/50 border border-border/40 flex flex-col gap-1">
+                      <span className="text-[9px] font-black text-muted-foreground/60 uppercase">SINK</span>
+                      <span className="text-[11px] font-bold">ClickHouse</span>
+                   </div>
+                </div>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full h-10 rounded-xl border-dashed border-primary/30 text-primary font-bold text-[10px] uppercase tracking-widest hover:bg-primary/5"
+                  onClick={() => toast.info("Opening Edge Designer (Vercel-style Drag & Drop logic editor)...")}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select client (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map(
-                      (client: { id: string; name: string }) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="pipeline-freq">Frequency</Label>
-                <Select
-                  value={formData.frequency}
-                  onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, frequency: v as string }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Plus className="h-3 w-3 mr-2" /> ADD TRANSFORMATION LAYER
+                </Button>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
+                className="font-bold text-xs"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                DISCARD
               </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
+              <Button 
+                type="submit" 
+                disabled={createMutation.isPending}
+                className="px-8 h-11 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] bg-primary text-white shadow-xl shadow-primary/10"
+              >
                 {createMutation.isPending
-                  ? "Saving..."
+                  ? "SAVING TO REDIS..."
                   : selected
-                  ? "Update Pipeline"
-                  : "Create Pipeline"}
+                  ? "UPDATE ORCHESTRATION"
+                  : "DEPLOY PIPELINE"}
               </Button>
             </DialogFooter>
           </form>
