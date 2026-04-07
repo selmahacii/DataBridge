@@ -74,9 +74,9 @@ export function InferenceResultsPage() {
   const runFullInference = () => {
     setIsInferencing(true);
     toast.promise(new Promise(resolve => setTimeout(resolve, 3000)), {
-      loading: 'Orchestrating GPU clusters for massive inference...',
-      success: 'Global inference complete. Signals updated.',
-      error: 'Inference pipeline failure. Check logs.',
+      loading: 'Orchestrating high-performance compute for predictive models...',
+      success: 'Global analytical cycle complete. Signals updated.',
+      error: 'Model execution failure. Check logs.',
     });
     setTimeout(() => setIsInferencing(false), 3000);
   };
@@ -89,8 +89,8 @@ export function InferenceResultsPage() {
             <ChevronLeft className="h-3 w-3" />
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Back to Performance Overview</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight tracking-tighter">Inference Results</h1>
-          <p className="text-muted-foreground text-sm font-medium">Predictive modeling outputs via Meta Prophet & SHAP feature importance.</p>
+          <h1 className="text-3xl font-black tracking-tight tracking-tighter">Predictive Outcomes</h1>
+          <p className="text-muted-foreground text-sm font-medium">Strategic modeling outputs via Meta Prophet & SHAP feature contribution analysis.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-9 font-bold px-4 border-border/50" onClick={() => toast.info("Opening Intelligence Temporal Filter...")}>
@@ -104,7 +104,7 @@ export function InferenceResultsPage() {
             disabled={isInferencing}
           >
             <Zap className={cn("mr-2 h-4 w-4", isInferencing && "animate-pulse")} />
-            {isInferencing ? "INFERENCING..." : "RUN FULL INFERENCE"}
+            {isInferencing ? "EXECUTING MODELS..." : "RUN FULL PREDICTIVE CYCLE"}
           </Button>
         </div>
       </div>
@@ -299,20 +299,20 @@ export function InferenceResultsPage() {
          <div className="p-8 border-b border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/10">
             <div className="space-y-1">
                <div className="flex items-center gap-2 mb-1">
-                  <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                  <h3 className="font-black text-xl tracking-tighter uppercase">Intelligence Audit Trail</h3>
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <h3 className="font-black text-xl tracking-tighter uppercase">Predictive Audit Trace</h3>
                </div>
-               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Detailed attribution trace for the latest model run cluster.</p>
+               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Detailed attribution trace for the latest model execution epoch.</p>
             </div>
             <div className="flex items-center gap-2">
                <Button variant="outline" size="sm" className="h-10 font-bold px-4 rounded-xl border-border/60 hover:bg-primary/5" onClick={() => toast.info("Synching model weights with global registry...")}>
                   <RefreshCw className="mr-2 h-4 w-4 opacity-70" />
                   SYNC WEIGHTS
                </Button>
-               <Button variant="outline" size="sm" className="h-10 font-bold px-4 rounded-xl border-border/60" onClick={() => toast.success("Inference metrics exported as JSON.")}>
+                <Button variant="outline" size="sm" className="h-10 font-bold px-4 rounded-xl border-border/60" onClick={() => toast.success("Predictive metrics exported as JSON.")}>
                   <Download className="mr-2 h-4 w-4 opacity-70" />
                   EXPORTS
-               </Button>
+                </Button>
             </div>
          </div>
          <CardContent className="p-0">
@@ -364,15 +364,15 @@ export function InferenceResultsPage() {
                         <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
                            <PlaySquare className="h-5 w-5 text-primary" />
                         </div>
-                        <h4 className="font-black text-2xl tracking-tighter uppercase">Inference Replay Ready</h4>
+                        <h4 className="font-black text-2xl tracking-tighter uppercase">Strategic Validation Replay</h4>
                      </div>
-                     <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-xl">
-                        Validate model calibration by re-simulating the inference pipeline over historical signal clusters. 
+                      <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-xl">
+                        Validate model calibration by re-simulating the predictive pipeline over historical signal clusters. 
                         Target outcomes are matched against reality to compute **Temporal Deviation Delta**.
-                     </p>
+                      </p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                     <div className="p-4 rounded-2xl bg-background/50 border border-border/40 space-y-2">
+                     <div className="p-4 rounded-2xl bg-background border border-border/40 space-y-2">
                         <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Temporal Window</label>
                         <select className="w-full bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer">
                            <option>LAST_7_DAYS_HIGH_FIDELITY</option>
