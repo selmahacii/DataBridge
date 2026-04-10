@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const pipeline = await db.pipeline.findUnique({
       where: { id: pipelineId },
-      select: { id: true, orgId: true, name: true },
+      select: { id: true, clientId: true, name: true },
     })
 
     if (!pipeline) {
@@ -38,12 +38,10 @@ export async function GET(request: NextRequest) {
       rowCategory: string | null
       rowMetric: string | null
       rowValue: number
-      rowLabel: string | null
-      extraData: string | null
     }>>()
 
     for (const row of processedData) {
-      const dateKey = row.rowDate ?? 'unknown'
+      const dateKey = row.rowDate.toISOString()
       if (!aggregatedByDate.has(dateKey)) {
         aggregatedByDate.set(dateKey, [])
       }
@@ -51,8 +49,6 @@ export async function GET(request: NextRequest) {
         rowCategory: row.rowCategory,
         rowMetric: row.rowMetric,
         rowValue: row.rowValue,
-        rowLabel: row.rowLabel,
-        extraData: row.extraData,
       })
     }
 
@@ -71,15 +67,17 @@ export async function GET(request: NextRequest) {
       rowCategory: row.rowCategory,
       rowMetric: row.rowMetric,
       rowValue: row.rowValue,
-      rowLabel: row.rowLabel,
-      extraData: row.extraData ? (() => { try { return JSON.parse(row.extraData) } catch { return null } })() : null,
+      confidenceScore: row.confidenceScore,
+      anomalyScore: row.anomalyScore,
+      impactScore: row.impactScore,
+      explainability: row.explainability ? (() => { try { return JSON.parse(row.explainability) } catch { return null } })() : null,
       createdAt: row.createdAt,
     }))
 
     return NextResponse.json({
       pipeline: {
         id: pipeline.id,
-        orgId: pipeline.orgId,
+        clientId: pipeline.clientId,
         name: pipeline.name,
       },
       aggregatedByDate: dateEntries,

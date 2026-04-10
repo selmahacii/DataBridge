@@ -59,12 +59,12 @@ const prophetData = [
 ];
 
 const shapData = [
-  { feature: 'CLV Predicted', impact: 0.45, color: 'text-primary' },
-  { feature: 'Avg Daily Sessions', impact: 0.32, color: 'text-primary' },
-  { feature: 'Marketing Channel', impact: 0.18, color: 'text-primary' },
-  { feature: 'Intent Score', impact: 0.12, color: 'text-primary' },
-  { feature: 'Location Context', impact: -0.05, color: 'text-destructive' },
-  { feature: 'Device Type', impact: -0.08, color: 'text-destructive' },
+  { feature: 'Attributed CLV Alpha', impact: 0.45, color: 'text-primary' },
+  { feature: 'Ingress Session Density', impact: 0.32, color: 'text-primary' },
+  { feature: 'Strategic Channel Weight', impact: 0.18, color: 'text-primary' },
+  { feature: 'Inbound Intent Delta', impact: 0.12, color: 'text-primary' },
+  { feature: 'Geospatial Context', impact: -0.05, color: 'text-destructive' },
+  { feature: 'Handshake Device Cluster', impact: -0.08, color: 'text-destructive' },
 ];
 
 export function InferenceResultsPage() {

@@ -29,14 +29,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const metric = searchParams.get("metric") || "sessions";
     const sourceId = searchParams.get("sourceId");
+    const clientId = searchParams.get("clientId");
     const startDate = parseDate(searchParams.get("startDate"));
     const endDate = parseDate(searchParams.get("endDate"));
     const groupBy = searchParams.get("groupBy") || "day";
 
     const metrics = metric.split(",").map((m) => m.trim());
+    const NON_ADDITIVE_METRICS = ["bounceRate", "ctr", "avgSessionDuration", "costPerClick"];
 
     const where: Prisma.DataPointWhereInput = { metric: { in: metrics } };
     if (sourceId) where.sourceId = sourceId;
+    if (clientId) where.source = { clientId };
 
     if (startDate || endDate) {
       where.date = {};
@@ -55,28 +58,42 @@ export async function GET(request: NextRequest) {
 
     if (metrics.length === 1) {
       const metricName = metrics[0];
-      const grouped = new Map<string, number>();
+      const isNonAdditive = NON_ADDITIVE_METRICS.includes(metricName);
+      
+      const grouped = new Map<string, { total: number; count: number }>();
       for (const dp of dataPoints) {
         const key = getDateKey(new Date(dp.date), groupBy);
-        grouped.set(key, (grouped.get(key) || 0) + dp.value);
+        const current = grouped.get(key) || { total: 0, count: 0 };
+        grouped.set(key, { 
+          total: current.total + dp.value, 
+          count: current.count + 1 
+        });
       }
-      const result = Array.from(grouped.entries()).map(([date, value]) => ({
+      
+      const result = Array.from(grouped.entries()).map(([date, stats]) => ({
         date,
-        [metricName]: Math.round(value * 100) / 100,
+        [metricName]: Math.round((isNonAdditive ? stats.total / stats.count : stats.total) * 100) / 100,
       }));
       return NextResponse.json({ data: result });
     }
 
     const results: Record<string, any[]> = {};
     for (const m of metrics) {
-      const grouped = new Map<string, number>();
+      const isNonAdditive = NON_ADDITIVE_METRICS.includes(m);
+      const grouped = new Map<string, { total: number; count: number }>();
+      
       for (const dp of dataPoints.filter((dp) => dp.metric === m)) {
         const key = getDateKey(new Date(dp.date), groupBy);
-        grouped.set(key, (grouped.get(key) || 0) + dp.value);
+        const current = grouped.get(key) || { total: 0, count: 0 };
+        grouped.set(key, { 
+          total: current.total + dp.value, 
+          count: current.count + 1 
+        });
       }
-      results[m] = Array.from(grouped.entries()).map(([date, value]) => ({
+      
+      results[m] = Array.from(grouped.entries()).map(([date, stats]) => ({
         date,
-        [m]: Math.round(value * 100) / 100,
+        [m]: Math.round((isNonAdditive ? stats.total / stats.count : stats.total) * 100) / 100,
       }));
     }
 

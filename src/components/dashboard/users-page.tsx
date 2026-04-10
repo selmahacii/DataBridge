@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAppStore } from "@/stores/app-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -83,6 +84,7 @@ const defaultFormData: UserFormData = {
 };
 
 export function UsersPage() {
+  const { selectedClientId } = useAppStore();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -91,8 +93,8 @@ export function UsersPage() {
   const [isEditing, setIsEditing] = useState(false);
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => api.getUsers() as Promise<User[]>,
+    queryKey: ["users", selectedClientId],
+    queryFn: () => api.getUsers(selectedClientId) as Promise<User[]>,
   });
 
   const { data: agencies = [] } = useQuery({
@@ -102,7 +104,7 @@ export function UsersPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: UserFormData) => api.createUser(data as Record<string, unknown>),
+    mutationFn: (data: UserFormData) => api.createUser(data as unknown as Record<string, unknown>),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setOpen(false);
@@ -116,7 +118,7 @@ export function UsersPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UserFormData }) =>
-      api.updateUser(id, data as Record<string, unknown>),
+      api.updateUser(id, data as unknown as Record<string, unknown>),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setOpen(false);
@@ -322,7 +324,7 @@ export function UsersPage() {
                 <Select
                   value={formData.role}
                   onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, role: v }))
+                    setFormData((d) => ({ ...d, role: v ?? "SME" }))
                   }
                 >
                   <SelectTrigger>
@@ -342,7 +344,7 @@ export function UsersPage() {
                 <Select
                   value={formData.agencyId}
                   onValueChange={(v) =>
-                    setFormData((d) => ({ ...d, agencyId: v }))
+                    setFormData((d) => ({ ...d, agencyId: v ?? "" }))
                   }
                 >
                   <SelectTrigger>

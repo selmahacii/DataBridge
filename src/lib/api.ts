@@ -67,7 +67,8 @@ export const api = {
   deleteTemplate: (id: string) => request(`/templates/${id}`, { method: "DELETE" }),
 
   // Users
-  getUsers: () => request("/users"),
+  getUsers: (clientId?: string | null) => 
+    request<any[]>(`/users${clientId ? `?clientId=${clientId}` : ""}`),
   createUser: (data: Record<string, unknown>) => request("/users", { method: "POST", body: JSON.stringify(data) }),
   updateUser: (id: string, data: Record<string, unknown>) => request(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteUser: (id: string) => request(`/users/${id}`, { method: "DELETE" }),

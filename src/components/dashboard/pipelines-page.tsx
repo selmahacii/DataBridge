@@ -157,8 +157,8 @@ export function PipelinesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">Worker Nodes: Online</span>
+            <span className="flex h-1.5 w-1.5 rounded-full bg-blue-500" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1 border-l border-blue-500/30 ml-1">Worker Nodes: Online</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">ETL Pipelines</h1>
           <p className="text-muted-foreground text-sm font-medium">
@@ -369,13 +369,13 @@ export function PipelinesPage() {
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-4">
+               <div className="p-6 rounded-2xl border border-border/40 bg-muted/20 space-y-4">
                 <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <ServerCog className="h-4 w-4 text-primary" />
+                   <div className="flex items-center gap-2 text-muted-foreground">
+                      <ServerCog className="h-4 w-4" />
                       <span className="text-xs font-bold tracking-tight">Step Logic & Orchestration</span>
                    </div>
-                   <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest">Multi-stage</Badge>
+                   <Badge className="bg-muted text-foreground border-border/60 text-[9px] font-bold uppercase tracking-widest rounded-md">Multi-stage</Badge>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
@@ -412,13 +412,13 @@ export function PipelinesPage() {
               >
                 DISCARD
               </Button>
-              <Button 
+               <Button 
                 type="submit" 
                 disabled={createMutation.isPending}
-                className="px-8 h-11 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] bg-primary text-white shadow-xl shadow-primary/10"
+                className="px-8 h-11 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] bg-foreground text-background shadow-none"
               >
                 {createMutation.isPending
-                  ? "SAVING TO REDIS..."
+                  ? "SAVING..."
                   : selected
                   ? "UPDATE ORCHESTRATION"
                   : "DEPLOY PIPELINE"}

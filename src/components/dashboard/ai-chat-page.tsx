@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAppStore } from "@/stores/app-store";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -24,30 +25,17 @@ const initialMessages: Message[] = [
       "Hello! I am your Strategic Analytics Partner. I'm here to assist with granular data deep-dives, custom report synthesis, and complex pipeline orchestration. How can I support your project today?",
     timestamp: new Date(Date.now() - 60000 * 5),
   },
-  {
-    id: "2",
-    role: "user",
-    content:
-      "Can you help me understand the conversion rate trends for last quarter?",
-    timestamp: new Date(Date.now() - 60000 * 4),
-  },
-  {
-    id: "3",
-    role: "assistant",
-    content:
-      "Based on your data, the conversion rate showed a 12% improvement over the last quarter. The most significant gains were observed in the Google Ads campaigns, which saw a 15% increase. Would you like me to generate a detailed report or dive deeper into specific channels?",
-    timestamp: new Date(Date.now() - 60000 * 3),
-  },
 ];
 
-export function ExpertLogicSyncPage() {
+export function AiChatPage() {
+  const { selectedClientId } = useAppStore();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -55,7 +43,7 @@ export function ExpertLogicSyncPage() {
     if (!input.trim()) return;
 
     const userMessage: Message = {
-      id: crypto.randomUUID(),
+      id: Math.random().toString(36).substring(2, 9),
       role: "user",
       content: input.trim(),
       timestamp: new Date(),
@@ -66,7 +54,7 @@ export function ExpertLogicSyncPage() {
 
     setTimeout(() => {
       const assistantMessage: Message = {
-        id: crypto.randomUUID(),
+        id: Math.random().toString(36).substring(2, 9),
         role: "assistant",
         content:
           "I appreciate your question. Let me analyze the relevant data to provide you with a comprehensive answer. Based on the available metrics, I would recommend reviewing the latest dashboard for the most up-to-date insights. Is there anything specific you would like me to focus on?",
@@ -98,7 +86,7 @@ export function ExpertLogicSyncPage() {
         </CardHeader>
         <CardContent className="flex-1 p-0 overflow-hidden">
           <ScrollArea className="h-full">
-            <div ref={scrollRef} className="p-6 space-y-4">
+            <div className="p-6 space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -144,6 +132,7 @@ export function ExpertLogicSyncPage() {
                   )}
                 </div>
               ))}
+              <div ref={scrollRef} />
             </div>
           </ScrollArea>
         </CardContent>

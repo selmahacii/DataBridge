@@ -42,6 +42,7 @@ model SmeClient {
   goals     Goal[]
   alerts    AnomalyAlert[]
   dispatches ScheduledDispatch[]
+  orders    Order[]
 }
 
 model User {
@@ -336,4 +337,33 @@ model ScheduledDispatch {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   client      SmeClient @relation(fields: [clientId], references: [id])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  clientId        String
+  externalOrderNo String?  
+  phone           String   
+  customerName    String?
+  amount          Float
+  status          String   @default("pending") // pending, confirmed, delivered, cancelled
+  source          String?  
+  campaign        String?
+  orderedAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  client          SmeClient @relation(fields: [clientId], references: [id])
+  matching        OrderMatching?
+}
+
+model OrderMatching {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  campaign        String?
+  source          String?
+  confidenceScore Float    @default(0)
+  matchType       String   // phone_match, time_match, source_match, none
+  status          String   @default("unmatched") // reliable_match, probable_match, unmatched
+
+  order           Order    @relation(fields: [orderId], references: [id])
 }

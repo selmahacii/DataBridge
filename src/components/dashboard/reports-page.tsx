@@ -251,8 +251,8 @@ export function ReportsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="flex h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">Autonomous Analytics</span>
+            <span className="flex h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1 border-l border-primary/30 ml-1">Autonomous Analytics</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Intelligence Reports</h1>
           <p className="text-muted-foreground text-sm font-medium">
@@ -334,8 +334,8 @@ export function ReportsPage() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <div className={cn(
-                                    "h-2 w-2 rounded-full",
-                                    report.status === 'completed' ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" : "bg-amber-500 animate-pulse"
+                                    "h-1.5 w-1.5 rounded-full",
+                                    report.status === 'completed' ? "bg-green-500" : "bg-amber-500 animate-pulse"
                                 )} />
                                 <span className="text-[11px] font-bold uppercase tracking-wide opacity-80">{report.status}</span>
                               </div>
@@ -502,8 +502,8 @@ export function ReportsPage() {
         <DialogContent className="sm:max-w-xl border-border/40 bg-background/95 backdrop-blur-3xl rounded-[2.5rem] p-0 overflow-hidden shadow-2xl">
           <div className="p-8 sm:p-10 border-b border-border/40 bg-muted/20">
             <div className="flex items-center gap-2 mb-3">
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1">Intelligence Protocol v4.2</Badge>
-              <Zap className="h-3.5 w-3.5 text-primary animate-pulse" />
+              <Badge variant="outline" className="bg-muted text-foreground border-border/80 text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-md">Intelligence Protocol v4.2</Badge>
+              <Zap className="h-3.5 w-3.5 text-primary/60" />
             </div>
             <DialogTitle className="text-3xl font-bold tracking-tight mb-2">Synthesize Intelligence</DialogTitle>
             <DialogDescription className="text-sm font-medium text-muted-foreground/80 leading-relaxed">
@@ -590,12 +590,12 @@ export function ReportsPage() {
                 </Select>
               </div>
 
-              <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
+              <div className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-4">
                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/80 flex items-center gap-2">
+                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
                        <Zap className="h-3 w-3" /> Intelligence Controls
-                    </span>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest">Enhanced</Badge>
+                     </span>
+                     <Badge className="bg-muted text-foreground border-border/60 text-[9px] font-bold uppercase tracking-widest rounded-md">Enhanced</Badge>
                  </div>
                  <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center justify-between gap-3">
@@ -619,7 +619,7 @@ export function ReportsPage() {
               >
                 Abort Protocol
               </Button>
-              <Button type="submit" disabled={createMutation.isPending} className="h-12 flex-1 sm:flex-none px-12 font-black text-[10px] uppercase tracking-[0.25em] hover:scale-[1.02] active:scale-[0.98] transition-all rounded-xl bg-primary text-white">
+              <Button type="submit" disabled={createMutation.isPending} className="h-12 flex-1 sm:flex-none px-12 font-black text-[10px] uppercase tracking-[0.25em] hover:scale-[1.02] active:scale-[0.98] transition-all rounded-xl bg-foreground text-background">
                 {createMutation.isPending
                   ? "SYNTESIZING..."
                   : "INITIALIZE GENERATION"}
@@ -657,7 +657,7 @@ export function ReportsPage() {
               <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-0.5">Live Intelligence Preview</Badge>
+                    <Badge variant="outline" className="bg-muted/80 text-foreground border-border text-[9px] font-bold uppercase tracking-[0.2em] px-3 py-0.5 rounded-md">Live Intelligence Preview</Badge>
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-50 px-2 border-l border-border/50">Pulse ID: {selected?.id.slice(0, 8)}</span>
                   </div>
                   <DialogTitle className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground/90">{selected?.title}</DialogTitle>
@@ -686,12 +686,12 @@ export function ReportsPage() {
                   { label: "Synthesis Duration", value: stats?.synthesisDuration ? `${stats.synthesisDuration}s` : "0.5s", trend: "Measured", icon: LineChart },
                   { label: "Data Fidelity", value: stats?.fidelityScore ? `${stats.fidelityScore}%` : "99.1%", trend: "Tracked", icon: Badge },
                 ].map((stat, i) => (
-                  <div key={i} className="group p-6 rounded-3xl bg-accent/20 border border-border/10 space-y-3 hover:bg-accent/40 hover:border-primary/20 transition-all duration-300">
+                  <div key={i} className="group p-6 rounded-3xl bg-muted/20 border border-border/40 space-y-3 hover:bg-muted/40 hover:border-border/80 transition-all duration-300">
                     <div className="flex items-center justify-between">
-                      <div className="h-10 w-10 rounded-xl bg-background/50 flex items-center justify-center shadow-inner group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                      <div className="h-10 w-10 rounded-xl bg-background flex items-center justify-center shadow-inner group-hover:bg-accent transition-colors">
                         <stat.icon className="h-5 w-5 opacity-80" />
                       </div>
-                      <span className="text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full uppercase tracking-tighter">{stat.trend}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full uppercase tracking-tighter">{stat.trend}</span>
                     </div>
                     <div>
                       <p className="text-2xl font-bold tracking-tight text-foreground/80 group-hover:text-foreground transition-colors">{stat.value}</p>
@@ -705,19 +705,19 @@ export function ReportsPage() {
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
                     <h4 className="text-base font-bold tracking-tight flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground" />
                       Performance Narrative Analytics
                     </h4>
                     <p className="text-xs text-muted-foreground font-medium ml-5">Cross-channel historical trend analysis with real-time ingress calibration for {selected?.clientName}.</p>
                   </div>
-                  <div className="hidden sm:flex items-center gap-3 bg-muted/30 px-3 py-1.5 rounded-xl border border-border/50">
+                  <div className="hidden sm:flex items-center gap-3 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/40">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-sm bg-primary/40 shadow-[0_0_8px_rgba(var(--primary),0.3)]" />
-                      <span className="text-[10px] font-bold uppercase text-foreground/70">Projected</span>
+                      <span className="h-1.5 w-1.5 rounded-sm bg-muted-foreground/20" />
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground/60">Projected</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-sm bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                      <span className="text-[10px] font-bold uppercase text-foreground/90 font-bold">Actual</span>
+                      <span className="h-1.5 w-1.5 rounded-sm bg-foreground/60" />
+                      <span className="text-[10px] font-bold uppercase text-foreground/80 font-bold">Actual</span>
                     </div>
                   </div>
                 </div>
@@ -790,7 +790,7 @@ export function ReportsPage() {
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 hidden sm:block">Fidelity Protocol v4.2 Rev-8</p>
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <Button variant="ghost" className="flex-1 sm:flex-none font-bold text-xs h-11 px-8 rounded-xl" onClick={() => setViewOpen(false)}>Close Archive</Button>
-                <Button className="flex-1 sm:flex-none font-bold text-xs h-11 px-10 rounded-xl" onClick={() => selected && handleDownload(selected)}>
+                <Button className="flex-1 sm:flex-none font-bold text-xs h-11 px-10 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all shadow-none" onClick={() => selected && handleDownload(selected)}>
                   Download Full Record
                 </Button>
               </div>
@@ -803,7 +803,7 @@ export function ReportsPage() {
           <div className="flex flex-col max-h-[85vh]">
             <div className="p-10 border-b border-border/40 bg-muted/20">
               <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-1">Execution Intelligence Trace</Badge>
+                <Badge variant="outline" className="bg-muted text-foreground border-border text-[9px] font-bold uppercase tracking-[0.2em] px-4 py-1 rounded-md">Execution Intelligence Trace</Badge>
                 <div className="flex items-center gap-2">
                    <Clock className="h-3 w-3 text-muted-foreground" />
                    <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50 tracking-widest">{selectedDispatch?.cron} Schedule</span>

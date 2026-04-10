@@ -252,11 +252,11 @@ export function ClientsPage() {
                         <TableCell>
                            <div className="flex flex-col gap-1">
                               <span className="text-xs font-bold">{client.industry}</span>
-                              <Badge variant="outline" className="w-fit text-[9px] font-black uppercase px-2 h-4 border-border/60">EMEA</Badge>
+                              <Badge variant="outline" className="w-fit text-[9px] font-bold uppercase px-2 h-4 border-border/80 bg-background/50 text-muted-foreground/80 rounded-md">EMEA</Badge>
                            </div>
                         </TableCell>
                         <TableCell>
-                           <Badge className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest h-6 px-3 border-primary/20">Enterprise</Badge>
+                           <Badge className="bg-muted/50 text-foreground text-[9px] font-bold uppercase tracking-[0.15em] h-6 px-3 border border-border/50 rounded-lg shadow-none">Enterprise</Badge>
                         </TableCell>
                         <TableCell className="text-center">
                            <span className="font-black text-sm tabular-nums text-primary/80">{client.sourcesCount}</span>
@@ -481,11 +481,11 @@ export function ClientsPage() {
                       ))}
                    </div>
 
-                   <div className="pt-12">
-                      <Button className="w-full h-16 rounded-[2rem] bg-primary text-white font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl shadow-primary/5 hover:scale-[1.01] hover:bg-primary transition-all active:scale-[0.98]">
-                         ARCHIVE & DOWNLOAD CRYPTOGRAPHIC AUDIT (PDF)
-                      </Button>
-                   </div>
+                    <div className="pt-12">
+                       <Button className="w-full h-14 rounded-xl bg-foreground text-background font-bold uppercase tracking-[0.2em] text-[10px] shadow-none hover:bg-foreground/90 transition-all active:scale-[0.98] border border-transparent">
+                          ARCHIVE & DOWNLOAD CRYPTOGRAPHIC AUDIT (PDF)
+                       </Button>
+                    </div>
                 </div>
              </div>
           </div>

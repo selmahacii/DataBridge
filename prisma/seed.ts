@@ -5,8 +5,11 @@ const db = new PrismaClient();
 // ── Reference Data ──────────────────────────────────────────────────────────
 
 const AGENCIES = [
-  { name: "Nexus Digital Group", slug: "nexus-digital", email: "contact@nexusdigital.com", phone: "+213780125700", address: "Algiers,Algeria", plan: "enterprise", maxClients: 50 },
+  { name: "Nexus Digital Group", slug: "nexus-digital", email: "contact@nexusdigital.com", phone: "+213780125700", address: "Algiers, Algeria", plan: "enterprise", maxClients: 50 },
   { name: "Peak Performance Media", slug: "peak-performance", email: "info@peakmedia.com", phone: "+44 20 7946 0958", address: "71 Queen Victoria St, London EC4V 4AY", plan: "professional", maxClients: 20 },
+  { name: "Innova Marketing Lab", slug: "innova-marketing", email: "hello@innova.io", phone: "+33 1 45 67 89 01", address: "12 Avenue des Champs-Élysées, Paris, France", plan: "enterprise", maxClients: 100 },
+  { name: "Blue Wave Analytics", slug: "blue-wave", email: "support@bluewave.com", phone: "+1 (212) 555-0199", address: "450 Lexington Ave, New York, NY 10017, USA", plan: "starter", maxClients: 10 },
+  { name: "Zenith Growth Partners", slug: "zenith-growth", email: "partners@zenith.ae", phone: "+971 4 123 4567", address: "Sheikh Zayed Rd, Dubai, UAE", plan: "professional", maxClients: 30 },
 ];
 
 const CLIENTS = [
@@ -227,6 +230,27 @@ function seasonalFactor(month: number, peakMonth: number, amplitude: number): nu
 
 async function seed() {
   console.log("Seeding DataBridge Analytics database...\n");
+
+  // Cleanup existing data
+  console.log("Cleaning up existing data...");
+  await db.dataPoint.deleteMany();
+  await db.dataSource.deleteMany();
+  await db.pipelineStep.deleteMany();
+  await db.pipelineLog.deleteMany();
+  await db.pipeline.deleteMany();
+  await db.report.deleteMany();
+  await db.goal.deleteMany();
+  await db.anomalyAlert.deleteMany();
+  await db.activityLog.deleteMany();
+  await db.insightMessage.deleteMany();
+  await db.insightConversation.deleteMany();
+  await db.user.deleteMany();
+  await db.scheduledDispatch.deleteMany();
+  await db.orderMatching.deleteMany();
+  await db.order.deleteMany();
+  await db.smeClient.deleteMany();
+  await db.agency.deleteMany();
+  await db.template.deleteMany();
 
   // Agencies
   console.log("Creating agencies...");
@@ -565,6 +589,68 @@ async function seed() {
     { conversationId: conv2.id, role: "user", content: "Why is the Meta Ads pipeline showing errors?" },
     { conversationId: conv2.id, role: "assistant", content: "The Meta Ads pipeline encountered authentication errors on 3 of the last 7 sync attempts. I recommend re-authenticating the Meta Ads source in your data source settings." },
   ]});
+
+  // ── Orders & Matching ─────────────────────────────────────────────────────
+  console.log("Generating business orders and pragmatic matching...");
+  const ORDER_STATUSES = ["pending", "confirmed", "delivered", "cancelled"];
+  const AD_CAMPAIGNS = ["Brand Awareness", "Retargeting", "Seasonal Sale", "Product Launch"];
+  const ALGERIAN_PHONES = ["0550", "0661", "0770", "0540"];
+
+  for (const client of clients) {
+    const numOrders = 150 + Math.floor(Math.random() * 200);
+    const clientRng = seededRandom(clients.indexOf(client) * 99);
+    
+    for (let i = 0; i < numOrders; i++) {
+        const status = ORDER_STATUSES[Math.floor(clientRng() * ORDER_STATUSES.length)];
+        const amount = 3500 + Math.floor(clientRng() * 12000);
+        const phone = `${ALGERIAN_PHONES[Math.floor(clientRng() * ALGERIAN_PHONES.length)]}${Math.floor(100000 + clientRng() * 899999)}`;
+        const orderedAt = new Date(Date.now() - clientRng() * 86400000 * 60); // Last 60 days
+        
+        const campaign = AD_CAMPAIGNS[Math.floor(clientRng() * AD_CAMPAIGNS.length)];
+        
+        const order = await db.order.create({
+            data: {
+                clientId: client.id,
+                phone,
+                customerName: `Customer ${i}`,
+                amount,
+                status,
+                campaign,
+                source: Math.random() > 0.5 ? "facebook" : "google",
+                orderedAt
+            }
+        });
+
+        // ── Matching Logic ──
+        const matchDecision = clientRng();
+        let matchType = "none";
+        let confidenceScore = 0;
+        let matchStatus = "unmatched";
+
+        if (matchDecision > 0.6) {
+            matchType = "phone_match";
+            confidenceScore = 0.95;
+            matchStatus = "reliable_match";
+        } else if (matchDecision > 0.3) {
+            matchType = "time_match";
+            confidenceScore = 0.45;
+            matchStatus = "probable_match";
+        }
+
+        if (matchType !== "none") {
+            await db.orderMatching.create({
+                data: {
+                    orderId: order.id,
+                    campaign,
+                    source: order.source,
+                    confidenceScore,
+                    matchType,
+                    status: matchStatus
+                }
+            });
+        }
+    }
+  }
 
   console.log("\nSeeding complete!");
   console.log(`Database statistics:`);

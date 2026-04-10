@@ -54,47 +54,43 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip
 } from "recharts";
+import { generateTimeSeries } from "@/lib/data-utils";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAppStore } from "@/stores/app-store";
 import { toast } from "sonner";
 
-const trendData = [
-  { day: 'Mon', score: 98.4 },
-  { day: 'Tue', score: 98.7 },
-  { day: 'Wed', score: 98.2 },
-  { day: 'Thu', score: 99.1 },
-  { day: 'Fri', score: 98.9 },
-  { day: 'Sat', score: 99.4 },
-  { day: 'Sun', score: 99.2 },
-];
+const trendData = generateTimeSeries(7, 98.5, 0.02).map(d => ({ 
+  day: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }), 
+  score: d.val 
+}));
 
 const compareData = [
-  { source: 'GA4', raw: 124000, normalized: 123850 },
-  { source: 'Meta', raw: 45000, normalized: 44200 },
-  { source: 'Google Ads', raw: 78000, normalized: 77950 },
-  { source: 'TikTok', raw: 12000, normalized: 11500 },
+  { source: 'KAFKA_PRD', raw: 124000, normalized: 123850 },
+  { source: 'META_ADS', raw: 45000, normalized: 44200 },
+  { source: 'GADS_API', raw: 78000, normalized: 77950 },
+  { source: 'TIKTOK_ING', raw: 12000, normalized: 11500 },
 ];
 
 const rules = [
-  { name: "Schema Matching (Avro)", pass: 99.9, source: "All", status: "Active" },
-  { name: "GA4 Measurement Protocol ID", pass: 99.2, source: "Google", status: "Active" },
-  { name: "Meta Lead Gen Payload", pass: 97.4, source: "Meta", status: "Warning" },
-  { name: "UTM Parameter Integrity", pass: 94.5, source: "Marketing", status: "Active" },
-  { name: "Duplication Filtering", pass: 100, source: "Flink Logic", status: "Active" },
+  { name: "Avro Schema Signature Match", pass: 99.9, source: "All Clusters", status: "Active" },
+  { name: "GA4 Protocol Integrity Check", pass: 99.2, source: "Google Ingress", status: "Active" },
+  { name: "Meta Conversion Payload Drift", pass: 87.4, source: "Meta Edge", status: "Warning" },
+  { name: "UTM Parameter Heuristic", pass: 94.5, source: "Marketing Nodes", status: "Active" },
+  { name: "Flink Deduplication Logic", pass: 100, source: "Stream Engine", status: "Active" },
 ];
 
 const rejectedEvents = [
-  { id: "ev_12345", reason: "Invalid JSON Structure", source: "TikTok Ads Hook", timestamp: "2m ago", severity: "high" },
-  { id: "ev_12346", reason: "Missing required 'pixel_id'", source: "Meta Conversions", timestamp: "15m ago", severity: "medium" },
-  { id: "ev_12347", reason: "Schema version mismatch", source: "GA4 Internal", timestamp: "45m ago", severity: "low" },
-  { id: "ev_12348", reason: "Malformed UTM string", source: "Google Ads Hub", timestamp: "1h ago", severity: "low" },
+  { id: "0xcf20...a1b", reason: "Malformed Avro Binary", source: "TikTok_Hook_Edge", timestamp: "2m ago", severity: "high" },
+  { id: "0x8a1d...42e", reason: "Missing Pixel Signature", source: "Meta_Conversions_v4", timestamp: "15m ago", severity: "medium" },
+  { id: "0xf4b9...9de", reason: "Schema Revision Mismatch", source: "Internal_GA4_Node", timestamp: "45m ago", severity: "low" },
+  { id: "0xd3c2...12b", reason: "Invalid UTM Encoding", source: "GAds_Hub_Ingress", timestamp: "1h ago", severity: "low" },
 ];
 
 const avroSchemas = [
-  { name: "marketing_event_v4", version: 4, updated: "2d ago", evolution: "Backward Compatible" },
-  { name: "identity_lead_v2", version: 2, updated: "1w ago", evolution: "Breaking Change" },
-  { name: "session_track_v12", version: 12, updated: "5h ago", evolution: "Forward Compatible" },
+  { name: "industrial_dist_v4", version: 4, updated: "2d ago", evolution: "Backward Compatible" },
+  { name: "maghreb_finance_v2", version: 2, updated: "1w ago", evolution: "Breaking Change" },
+  { name: "ooredoo_sync_v12", version: 12, updated: "5h ago", evolution: "Forward Compatible" },
 ];
 
 export function DataQualityPage() {

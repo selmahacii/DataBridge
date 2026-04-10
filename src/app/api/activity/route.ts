@@ -5,8 +5,30 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const clientId = searchParams.get("clientId");
+
+    let userIds: string[] | undefined = undefined;
+    if (clientId) {
+      const client = await db.smeClient.findUnique({
+        where: { id: clientId },
+        select: { agencyId: true }
+      });
+      if (client?.agencyId) {
+        const users = await db.user.findMany({
+          where: { agencyId: client.agencyId },
+          select: { id: true }
+        });
+        userIds = users.map(u => u.id);
+      }
+    }
 
     const activities = await db.activityLog.findMany({
+      where: userIds ? { userId: { in: userIds } } : {},
+      include: {
+        user: {
+          select: { name: true }
+        }
+      },
       take: Math.min(limit, 200),
       orderBy: { createdAt: "desc" },
     });
