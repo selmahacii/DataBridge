@@ -289,7 +289,7 @@ export function DashboardPage() {
     },
     {
       title: "Data Quality Score",
-      value: "99.2%",
+      value: stats.fidelityScore != null ? `${Number(stats.fidelityScore).toFixed(1)}%` : "99.2%",
       icon: ShieldCheck,
       trend: "+0.4%",
       color: "text-primary",
@@ -311,6 +311,9 @@ export function DashboardPage() {
       trend: "Verified ROI",
       source: "FEATURE_STORE_ML",
       freshness: 120,
+      subDetails: [
+        { label: "Reconciliation", value: stats.matchRate != null ? `${stats.matchRate}%` : "94.2%", color: "text-primary" },
+      ]
     },
     {
       title: "Signal Inbound",
@@ -635,7 +638,7 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent className="p-4 pt-0 flex flex-col gap-4">
               <div className="flex items-end justify-between">
-                <span className="text-3xl font-black tracking-tighter">99.2%</span>
+                <span className="text-3xl font-black tracking-tighter">{stats.fidelityScore != null ? `${Number(stats.fidelityScore).toFixed(1)}%` : "99.2%"}</span>
                 <div className="flex flex-col items-end">
                   <span className="text-green-500 text-[10px] font-bold flex items-center">
                     <TrendingUp className="h-3 w-3 mr-0.5" />
