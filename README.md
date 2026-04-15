@@ -4,63 +4,106 @@ DataBridge is a high-fidelity, industrial-grade data engineering platform design
 
 ---
 
-## 🏗️ Detailed Architectural Topology
+## 🏗️ System Architecture (C4 Model)
+
+DataBridge is architected as a **Distributed Microservices System** (transitioning from a Modular Monolith) to ensure extreme scalability, fault tolerance, and multi-tenant isolation. Below is the C4 visualization of the platform.
+
+### 1. Level 1: System Context
+Focuses on the actors (Users) and how DataBridge interacts with external ecosystems.
 
 ```mermaid
-graph TD
-    %% Tiers
-    subgraph "INGRESS TIER (External Connectors)"
-        GA4["Google Analytics 4\n(OAuth 2.0 / REST)"]
-        Meta["Meta Graph API\n(OAuth 2.0 / Ads SDK)"]
-        GAds["Google Ads API\n(gRPC / SOAP)"]
-        CSV["Custom CSV Ingress\n(Stream Processing)"]
-    end
+C4Context
+    title System Context Diagram for DataBridge
 
-    subgraph "ORCHESTRATION TIER (Node.js/Next.js Runtime)"
-        Auth["NextAuth.js\n(JWT + Redis Sessions)"]
-        ETL["ETL Engine\n(Pipeline Steps)"]
-        Audit["Audit Trail\n(Event Lineage)"]
-        API["REST API Layer\n(zod-validated)"]
-    end
+    Person(user, "Marketing Manager / Agency Admin", "A user who needs to monitor marketing performance and manage ETL pipelines.")
+    System(databridge, "DataBridge System", "Aggregates, reconciles, and analyzes multi-tenant marketing data for high-fidelity intelligence.")
 
-    subgraph "INTELLIGENCE TIER (Data Science & Logic)"
-        Match["Order Reconciliation\n(Handshake Matching)"]
-        Fid["Fidelity Calculator\n(Schema Validation)"]
-        Forecast["Prophet Forecasts\n(Time-Series Analysis)"]
-        AI["Strategic Data Assistant\n(Contextual Analysis)"]
-    end
+    System_Ext(ga4, "Google Analytics 4 API", "External data source for web traffic metrics.")
+    System_Ext(meta, "Meta Ads API", "External data source for social media ad performance.")
+    System_Ext(gads, "Google Ads API", "External data source for search engine advertising.")
+    System_Ext(s3, "Cloud Object Storage (S3/GCS)", "Long-term cold storage for raw event data.")
 
-    subgraph "STORAGE TIER (PostgreSQL & Redis)"
-        DB[("PostgreSQL\n(Multi-tenant Context)")]
-        Cache[("Redis 7.0 (LRU)\n(API & Session Cache)")]
-    end
-
-    %% Key Relationships
-    GA4 & Meta & GAds & CSV --> Auth
-    Auth --> API
-    API --> DB
-    DB --> ETL
-    ETL --> Fid
-    Fid --> DB
-    DB --> Match
-    Match --> Stats["KPI Synthesis"]
-    Stats --> DB
-    DB -.-> Cache
-    Cache -.-> API
-    
-    %% User Interaction
-    User((User)) --> UI["Next.js Responsive UI"]
-    UI --> Store["Zustand State Store\n(clientId persistence)"]
-    Store --> API
-    UI --> AI
-    AI -- "Contextual Query" --> DB
-
-    %% Styles
-    style DB fill:#1a1a1a,stroke:#333,stroke-width:4px,color:#fff
-    style Cache fill:#d32f2f,stroke:#333,stroke-width:2px,color:#fff
-    style AI fill:#6200ea,stroke:#333,stroke-width:2px,color:#fff
-    style Match fill:#00c853,stroke:#333,stroke-width:2px,color:#fff
+    Rel(user, databridge, "Uses", "HTTPS/WSS")
+    Rel(databridge, ga4, "Fetches data from", "REST/OAuth2")
+    Rel(databridge, meta, "Fetches data from", "REST/SDK")
+    Rel(databridge, gads, "Fetches data from", "gRPC/REST")
+    Rel(databridge, s3, "Archives raw data to", "HTTPS")
 ```
+
+### 2. Level 2: Containers
+Describes the main technical building blocks and their interactions through the event-driven backbone.
+
+```mermaid
+C4Container
+    title Container Diagram for DataBridge
+
+    Person(user, "User", "Marketing Manager / Agency Admin")
+
+    Container_Boundary(databridge_boundary, "DataBridge System") {
+        Container(web_app, "Web Dashboard", "Next.js, TypeScript", "Provides the user interface for monitoring KPIs and configuring pipelines.")
+        Container(api_gateway, "API Gateway", "Kong / Nginx", "Entry point for authentication, rate limiting, and request routing.")
+        Container(query_api, "Reporting & Analytics API", "Go (Fiber)", "Handles complex analytical queries and dashboard telemetry.")
+        Container(ingestion_worker, "Ingestion Worker", "Go / Python", "Asynchronous service for fetching data from external APIs.")
+        Container(stream_processor, "Stream Processor", "Apache Flink", "Validates schemas, calculates DQ scores, and enriches events.")
+        Container(message_broker, "Message Broker", "Apache Kafka", "The event-driven backbone for decoupled communication.")
+        
+        ContainerDb(sql_db, "Meta & Auth Database", "PostgreSQL", "Stores user profiles, tenant configs, and pipeline metadata.")
+        ContainerDb(olap_db, "Analytical Warehouse", "ClickHouse", "High-performance columnar storage for billions of telemetry rows.")
+        ContainerDb(cache, "Serving Cache", "Redis", "Caches hot metrics and session data for sub-second responses.")
+    }
+
+    Rel(user, api_gateway, "Uses", "HTTPS")
+    Rel(api_gateway, web_app, "Routes to", "HTTPS")
+    Rel(api_gateway, query_api, "Routes to", "gRPC/REST")
+    
+    Rel(query_api, cache, "Reads/Writes", "Redis Protocol")
+    Rel(query_api, olap_db, "Queries", "Native Protocol")
+    
+    Rel(ingestion_worker, message_broker, "Publishes raw events", "Kafka Protocol")
+    Rel(message_broker, stream_processor, "Stream events", "Kafka Protocol")
+    Rel(stream_processor, olap_db, "Sinks normalized data", "Native Protocol")
+```
+
+### 3. Level 3: Components (Ingestion Worker)
+Deep dive into the core logic of the Ingestion Workers that power the data fetch operations.
+
+```mermaid
+C4Component
+    title Component Diagram for Ingestion Worker
+
+    Container(broker, "Message Broker", "Apache Kafka", "Receives raw event streams.")
+    Container_Ext(ext_api, "External Marketing APIs", "REST/gRPC", "Data sources (GA4, Meta).")
+
+    Container_Boundary(ingestion_boundary, "Ingestion Worker") {
+        Component(adapter, "Source Adapters", "Go Interface", "Normalizes diverse API responses into internal data structures.")
+        Component(rate_limit, "Rate Controller", "Go Channel", "Ensures compliance with external API quota limits.")
+        Component(breaker, "Circuit Breaker", "Hystrix-like pattern", "Prevents system collapse during external API outages.")
+        Component(publisher, "Kafka Producer", "Confluent-Kafka", "Serializes and publishes events to the raw_events topic.")
+    }
+
+    Rel(adapter, ext_api, "Requests Data", "HTTPS")
+    Rel(adapter, rate_limit, "Checks Quota")
+    Rel(adapter, breaker, "Monitors Health")
+    Rel(adapter, publisher, "Sends Payload")
+    Rel(publisher, broker, "Publishes", "Kafka Protocol")
+```
+
+---
+
+## 🧩 Architectural Rationale
+
+### Modular Monolith vs. Microservices
+DataBridge is currently undergoing a strategic evolution. While the initial MVP is built as a **Modular Monolith** (using Next.js and Prisma), the production-ready blueprint defines a **Distributed Microservices Architecture**.
+
+**Why the transition?**
+*   **Scalability**: Analytical workloads (especially high-cardinality aggregations) require dedicated compute resources decoupled from the web-serving tier.
+*   **Fault Tolerance**: By using a Message Broker (Kafka), data ingestion can continue even if the database or downstream processors are temporarily offline.
+*   **Polyglot Development**: Go is used for high-concurrency workers, while Python is optimized for ML-driven predictive modeling.
+
+### Layer Breakdown
+1.  **System Context**: Identifies DataBridge as the central intelligence hub that acts as a bridge between marketing specialists and complex upstream data providers (Google, Meta).
+2.  **Containers**: High-level technical units. Note the separation between the **Transactional DB** (PostgreSQL) for user state and the **OLAP DB** (ClickHouse) for analytical telemetry—a standard pattern for high-performance data platforms.
+3.  **Components**: Specific implementation details. The **Ingestion Worker** is highlighted here as it is the most critical subsystem, employing industrial patterns like Circuit Breakers and Rate Control to survive unstable external API environments.
 
 ---
 

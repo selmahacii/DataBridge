@@ -90,19 +90,19 @@ export default function Home() {
             <SidebarTrigger className="-ml-2 h-9 w-9 rounded-lg hover:bg-accent/50" />
             <Separator orientation="vertical" className="h-4 opacity-50" />
             
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Active Context</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap">Active Context</span>
               <Select
                 value={selectedClientId || "all"}
                 onValueChange={(val) => setSelectedClientId(val === "all" ? null : val)}
               >
-                <SelectTrigger className="h-9 w-[220px] rounded-lg border-none bg-accent/30 font-medium hover:bg-accent/50 transition-colors focus:ring-1 focus:ring-primary/20" size="sm">
-                  <SelectValue placeholder="All Clients (Aggregate)" />
+                <SelectTrigger className="h-9 w-[140px] xs:w-[180px] sm:w-[220px] rounded-lg border-none bg-accent/30 font-medium hover:bg-accent/50 transition-colors focus:ring-1 focus:ring-primary/20 text-xs sm:text-sm" size="sm">
+                  <SelectValue placeholder="All Clients" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all" className="font-medium">All Clients (Aggregate)</SelectItem>
+                  <SelectItem value="all" className="font-medium text-xs sm:text-sm">All Clients (Aggregate)</SelectItem>
                   {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                    <SelectItem key={client.id} value={client.id} className="text-xs sm:text-sm">{client.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -169,15 +169,13 @@ export default function Home() {
               </PopoverContent>
             </Popover>
             
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg lg:hidden">
-              <Menu className="h-4 w-4" />
-            </Button>
+            <SidebarTrigger className="h-9 w-9 rounded-lg lg:hidden" />
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto w-full">
           <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
-            <div className="p-6 md:p-8">
+            <div className="p-4 sm:p-6 md:p-8">
               <PageComponent />
             </div>
           </div>

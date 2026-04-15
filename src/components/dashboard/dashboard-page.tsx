@@ -80,68 +80,68 @@ function KPICard({ title, value, icon: Icon, trend, loading, freshness = 2, sour
     <Card 
       onClick={onClick}
       className={cn(
-        "overflow-hidden relative group border-border/50 bg-background/50 backdrop-blur-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 cursor-pointer",
-        onClick && "hover:border-primary/20"
+        "overflow-hidden relative group border-border/40 bg-background/40 backdrop-blur-xl hover:bg-background/60 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 cursor-pointer",
+        onClick && "hover:border-primary/30"
       )}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="rounded-xl bg-muted/50 p-2.5 transition-colors group-hover:bg-primary/10">
-            <Icon className={cn("h-5 w-5 transition-colors", color ? color : "text-muted-foreground group-hover:text-primary")} />
+      <CardContent className="p-5 flex flex-col h-full">
+        <div className="flex items-start justify-between mb-6">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">{title}</p>
+            {source && (
+              <span 
+                onClick={onSourceClick}
+                className="text-[9px] font-mono font-medium text-primary/60 hover:text-primary transition-colors cursor-pointer"
+              >
+                {source}
+              </span>
+            )}
           </div>
-          {source && (
-            <div 
-              onClick={onSourceClick}
-              className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-border/50 bg-background/30 backdrop-blur-sm shadow-sm cursor-pointer hover:bg-background/80 transition-all"
-            >
-              <span className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/40">Sourced from</span>
-              <span className="text-[9px] font-bold text-primary/80">{source}</span>
-            </div>
-          )}
+          <div className="rounded-lg bg-muted/40 p-2 transition-transform group-hover:scale-110">
+            <Icon className={cn("h-4 w-4", color ? color : "text-muted-foreground")} />
+          </div>
         </div>
         
-        <div className="space-y-1">
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">{title}</p>
+        <div className="flex-1 space-y-1">
           {loading ? (
             <Skeleton className="h-9 w-24" />
           ) : (
-            <div className="flex flex-col gap-1">
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-black tracking-tighter">{value}</p>
-                {trend && (
-                  <span className={cn(
-                    "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-                    trend.includes('+') || trend === 'Optimal' ? "text-green-500 bg-green-500/5" : "text-muted-foreground bg-muted/50"
-                  )}>
-                    {trend}
-                  </span>
-                )}
-              </div>
-              {subDetails && (
-                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                  {subDetails.map((s, i) => (
-                    <div key={i} className="flex items-center gap-1">
-                       <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">{s.label}:</span>
-                       <span className={cn("text-[10px] font-black italic", s.color || "text-foreground")}>{s.value}</span>
-                    </div>
-                  ))}
-                </div>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-black tracking-tighter tabular-nums">{value}</p>
+              {trend && (
+                <Badge variant={trend.includes('+') || trend === 'Optimal' ? "positive" : "outline"} className={cn(
+                  "text-[9px] px-1.5 h-4 font-bold border-none",
+                  trend.includes('+') || trend === 'Optimal' ? "bg-green-500/10 text-green-500 shadow-none" : "bg-muted text-muted-foreground"
+                )}>
+                  {trend}
+                </Badge>
               )}
+            </div>
+          )}
+          
+          {subDetails && (
+            <div className="grid grid-cols-1 gap-1.5 mt-4 pt-4 border-t border-border/20">
+              {subDetails.map((s, i) => (
+                <div key={i} className="flex items-center justify-between">
+                   <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">{s.label}</span>
+                   <span className={cn("text-[10px] font-black tabular-nums", s.color || "text-foreground/80")}>{s.value}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between">
           <div 
             onClick={onSourceClick}
-            className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 cursor-pointer", freshnessColor)}
+            className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[8px] font-bold uppercase tracking-widest transition-all", freshnessColor)}
           >
             <div className={cn("h-1 w-1 rounded-full animate-pulse", freshness < 5 ? "bg-green-500" : freshness < 15 ? "bg-yellow-500" : "bg-red-500")} />
-            Freshness : {freshness}m ago
+            {freshness}m ago
           </div>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"><Eye className="h-3.5 w-3.5" /></Button>
-          </div>
+          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:text-primary">
+            <Eye className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -264,7 +264,7 @@ export function DashboardPage() {
 
   const [velocityMode, setVelocityMode] = useState<"realtime" | "historical">("realtime");
 
-  const kpiItems = [
+  const systemKpis = [
     {
       title: "Signal Integrity",
       value: "98.4%",
@@ -296,6 +296,9 @@ export function DashboardPage() {
       source: "SCHEMA_REGISTRY",
       freshness: 3,
     },
+  ];
+
+  const businessKpis = [
     {
       title: "Attributed Revenue",
       value: stats.totalRevenue != null ? `$${Number(stats.totalRevenue).toLocaleString()}` : "$242,100",
@@ -332,7 +335,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-10 pb-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="bg-muted text-foreground border-border/60 text-[9px] font-bold uppercase tracking-widest px-2 py-0 rounded-md">Performance Intelligence</Badge>
@@ -345,12 +348,12 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-9 font-medium shadow-sm">
+          <Button variant="outline" size="sm" className="h-9 font-medium shadow-sm w-full sm:w-auto">
             Jan 1, 2025 — Apr 30, 2026
           </Button>
           <Button 
             size="sm" 
-            className="h-9 font-bold bg-foreground text-background hover:bg-foreground/90 transition-all rounded-lg"
+            className="h-9 font-bold bg-foreground text-background hover:bg-foreground/90 transition-all rounded-lg w-full sm:w-auto"
             onClick={handleExport}
           >
             <Download className="mr-2 h-4 w-4" />
@@ -373,26 +376,49 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {kpiItems.map((kpi) => (
-          <KPICard
-            key={kpi.title}
-            title={kpi.title}
-            value={kpi.value}
-            icon={kpi.icon}
-            trend={kpi.trend}
-            loading={statsQuery.isLoading}
-            source={kpi.source}
-            color={kpi.color}
-            freshness={kpi.freshness}
-            subDetails={kpi.subDetails}
-            onClick={() => setSelectedKPI(kpi)}
-            onSourceClick={(e) => {
-               e.stopPropagation();
-               setCurrentPage("sources");
-            }}
-          />
-        ))}
+      <div className="space-y-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {systemKpis.map((kpi) => (
+            <KPICard
+              key={kpi.title}
+              title={kpi.title}
+              value={kpi.value}
+              icon={kpi.icon}
+              trend={kpi.trend}
+              loading={statsQuery.isLoading}
+              source={kpi.source}
+              color={kpi.color}
+              freshness={kpi.freshness}
+              subDetails={kpi.subDetails}
+              onClick={() => setSelectedKPI(kpi)}
+              onSourceClick={(e) => {
+                 e.stopPropagation();
+                 setCurrentPage("sources");
+              }}
+            />
+          ))}
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {businessKpis.map((kpi) => (
+            <KPICard
+              key={kpi.title}
+              title={kpi.title}
+              value={kpi.value}
+              icon={kpi.icon}
+              trend={kpi.trend}
+              loading={statsQuery.isLoading}
+              source={kpi.source}
+              color={kpi.color}
+              freshness={kpi.freshness}
+              subDetails={kpi.subDetails}
+              onClick={() => setSelectedKPI(kpi)}
+              onSourceClick={(e) => {
+                 e.stopPropagation();
+                 setCurrentPage("sources");
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <Dialog open={!!selectedKPI} onOpenChange={() => setSelectedKPI(null)}>
@@ -442,39 +468,39 @@ export function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-4">
         <Card className="lg:col-span-3 border-border/50 bg-background/50 backdrop-blur-xl shadow-xl shadow-foreground/[0.02]">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40 px-8">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-2 border-b border-border/40 px-6 sm:px-8">
             <div>
               <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground/70">Traffic Velocity Intelligence</CardTitle>
               <div className="flex items-center gap-2 mt-1">
                  <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-40">Stream: normalized_events</span>
                  <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                 <span className="text-[10px] font-bold text-primary italic uppercase tracking-tighter">Verified by Flink</span>
+                 <span className="text-[10px] font-bold text-primary italic uppercase tracking-tighter sm:inline hidden">Verified by Flink</span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center bg-muted/30 rounded-lg p-1 border border-border/50">
+            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="flex items-center bg-muted/30 rounded-lg p-1 border border-border/50 shrink-0">
                 <Button 
                   variant={velocityMode === "realtime" ? "secondary" : "ghost"} 
                   size="xs" 
-                  className="text-[10px] h-7 font-bold px-3 transition-all"
+                  className="text-[10px] h-7 font-bold px-2 sm:px-3 transition-all"
                   onClick={() => setVelocityMode("realtime")}
                 >
-                  <Activity className="mr-1.5 h-3 w-3 text-primary" />
+                  <Activity className="mr-1 sm:mr-1.5 h-3 w-3 text-primary" />
                   REAL-TIME
                 </Button>
                 <Button 
                   variant={velocityMode === "historical" ? "secondary" : "ghost"} 
                   size="xs" 
-                  className="text-[10px] h-7 font-bold px-3 transition-all"
+                  className="text-[10px] h-7 font-bold px-2 sm:px-3 transition-all"
                   onClick={() => setVelocityMode("historical")}
                 >
-                  <HistoryIcon className="mr-1.5 h-3 w-3" />
-                  HISTORICAL
+                  <HistoryIcon className="mr-1 sm:mr-1.5 h-3 w-3" />
+                  HISTORIC
                 </Button>
               </div>
-              <div className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/50 hover:bg-muted/50 cursor-pointer transition-all">
+              <div className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/50 hover:bg-muted/50 cursor-pointer transition-all shrink-0">
                  <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                 <span className="text-[10px] font-bold uppercase tracking-widest">XLSX</span>
+                 <span className="text-[10px] font-bold uppercase tracking-widest hidden xs:inline">XLSX</span>
               </div>
             </div>
           </CardHeader>
@@ -675,12 +701,12 @@ export function DashboardPage() {
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Card className="border-border/50 bg-background/60 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-2xl shadow-foreground/[0.02]">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-6 px-10 pt-10">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-6 px-6 sm:px-10 pt-10 gap-4">
             <div>
               <CardTitle className="text-[13px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Growth Objectives</CardTitle>
               <p className="text-xs text-muted-foreground font-medium mt-1">North star metric progress against Q1 benchmarks cluster.</p>
             </div>
-            <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10">
+            <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shrink-0">
                <Target className="h-5 w-5 text-primary opacity-80" />
             </div>
           </CardHeader>
@@ -717,12 +743,12 @@ export function DashboardPage() {
         </Card>
 
         <Card className="border-border/50 bg-background/60 backdrop-blur-xl rounded-3xl overflow-hidden shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-6 px-10 pt-10">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-6 px-6 sm:px-10 pt-10 gap-4">
             <div>
               <CardTitle className="text-[13px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Real-time Pipeline Pulse</CardTitle>
               <p className="text-xs text-muted-foreground font-medium mt-1">Live ETL stream activity and ingress health matrix.</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
                 <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                 <Zap className="h-5 w-5 text-muted-foreground/40" />
             </div>
@@ -768,7 +794,7 @@ export function DashboardPage() {
       </div>
 
       <Card className="border-border/50 bg-background/50 backdrop-blur-xl shadow-2xl rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 pb-6 px-10 pt-10 bg-muted/10">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-6 px-6 sm:px-10 pt-10 bg-muted/10 gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -776,7 +802,7 @@ export function DashboardPage() {
             </div>
             <p className="text-xs text-muted-foreground font-medium opacity-70">Global operation activity log & attribution trace.</p>
           </div>
-          <Button variant="outline" size="sm" className="h-10 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl border-border/60 hover:bg-primary/5">
+          <Button variant="outline" size="sm" className="h-10 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl border-border/60 hover:bg-primary/5 w-full sm:w-auto">
              FULL AUDIT TRAIL
           </Button>
         </CardHeader>

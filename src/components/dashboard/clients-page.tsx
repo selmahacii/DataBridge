@@ -189,7 +189,7 @@ export function ClientsPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 mb-1">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -200,7 +200,7 @@ export function ClientsPage() {
             Manage high-fidelity account parameters and strategic signal mappings.
           </p>
         </div>
-        <Button onClick={handleOpenCreate} className="h-11 px-8 font-black text-[10px] uppercase tracking-widest rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
+        <Button onClick={handleOpenCreate} className="h-11 px-8 font-black text-[10px] uppercase tracking-widest rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           ESTABLISH ACCOUNT
         </Button>
@@ -314,33 +314,33 @@ export function ClientsPage() {
                    <div className="h-16 w-16 rounded-[1.25rem] bg-foreground flex items-center justify-center shadow-2xl shadow-black/20 ring-4 ring-muted">
                       <Target className="h-8 w-8 text-background" />
                    </div>
-                   <div className="space-y-2">
-                      <div className="flex items-center gap-4">
-                         <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground">MASTER_ACCOUNT</span>
+                    <div className="space-y-1 sm:space-y-2">
+                      <div className="flex items-center gap-2 sm:gap-4">
+                         <div className="flex items-center gap-1.5 sm:gap-2">
+                            <div className="h-1.5 sm:h-2 w-1.5 sm:w-2 rounded-full bg-primary" />
+                            <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-foreground">MASTER_ACCOUNT</span>
                          </div>
-                         <div className="h-4 w-[1px] bg-border" />
-                         <span className="text-[11px] font-mono font-medium text-muted-foreground/60 tabular-nums lowercase tracking-tighter italic">sys_id: {selected?.id?.substr(0, 16)}</span>
+                         <div className="h-3 sm:h-4 w-[1px] bg-border" />
+                         <span className="text-[9px] sm:text-[11px] font-mono font-medium text-muted-foreground/60 tabular-nums lowercase tracking-tighter italic truncate max-w-[100px] sm:max-w-none">sys_id: {selected?.id?.substr(0, 16)}</span>
                       </div>
-                      <h2 className="text-5xl font-black tracking-tightest text-foreground leading-none">{selected?.name}</h2>
+                      <h2 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tightest text-foreground leading-none">{selected?.name}</h2>
                    </div>
                 </div>
 
-                <div className="flex items-center gap-10">
-                   <div className="flex flex-col items-end border-r-2 border-border/40 pr-10">
+                <div className="flex flex-wrap items-center gap-6 sm:gap-10">
+                   <div className="flex flex-col items-start sm:items-end sm:border-r-2 border-border/40 sm:pr-10">
                       <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-[0.4em] mb-1.5">DATA_NODE_CLUSTER</span>
                       <div className="flex items-center gap-2.5">
-                         <span className="text-sm font-mono font-bold tracking-tight text-foreground/80 uppercase">EMEA_CENTRAL_01</span>
+                         <span className="text-xs sm:text-sm font-mono font-bold tracking-tight text-foreground/80 uppercase">EMEA_CENTRAL_01</span>
                       </div>
                    </div>
-                   <div className="flex items-center gap-6 bg-muted/20 border-2 border-border/40 rounded-[1.5rem] px-7 py-4">
-                      <div className="flex flex-col items-end">
-                         <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/30">HANDSHAKE_PROTOCOL</span>
-                         <span className="text-[11px] font-mono font-black text-green-500 uppercase tracking-widest whitespace-nowrap">STATUS: ENCRYPTED_LIVE</span>
+                   <div className="flex items-center gap-4 sm:gap-6 bg-muted/20 border-2 border-border/40 rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-7 py-3 sm:py-4">
+                      <div className="flex flex-col items-start sm:items-end">
+                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-muted-foreground/30">HANDSHAKE_PROTOCOL</span>
+                         <span className="text-[9px] sm:text-[11px] font-mono font-black text-green-500 uppercase tracking-widest whitespace-nowrap">EXT_LIVE</span>
                       </div>
-                      <div className="h-10 w-10 rounded-[1rem] border-2 border-green-500/20 bg-green-500/5 flex items-center justify-center">
-                         <Activity className="h-5 w-5 text-green-500 animate-[pulse_2s_infinite]" />
+                      <div className="h-8 sm:h-10 w-8 sm:w-10 rounded-lg sm:rounded-[1rem] border-2 border-green-500/20 bg-green-500/5 flex items-center justify-center">
+                         <Activity className="h-4 sm:h-5 w-4 sm:w-5 text-green-500 animate-[pulse_2s_infinite]" />
                       </div>
                    </div>
                 </div>
